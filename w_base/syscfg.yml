@@ -45,12 +45,13 @@ syscfg.vals:
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
     COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
 
+        
+# Below : non-working config related to the LORA management
     SPI_1_MASTER: 1
     SPI_1_MASTER_PIN_SCK: PA_5
     SPI_1_MASTER_PIN_MOSI: PA_7
     SPI_1_MASTER_PIN_MISO: PA_6
-        
-# Radio pinout for the SX1272 hat
+
     SX1272: 1
     SX1272_DIO_0: PB_1
     SX1272_DIO_1: PB_10

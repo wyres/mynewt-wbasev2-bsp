@@ -17,9 +17,9 @@
 # under the License.
 #
 
-pkg.name: hw/bsp/wyresRevB-BasedStm32l152discovery
+pkg.name: w_base
 pkg.type: bsp
-pkg.description: BSP definition for the STM32L152-Discovery board.
+pkg.description: BSP definition for w_base : first revision of the Wyres product also called "revB"
 pkg.author: "Apache Mynewt <dev@mynewt.apache.org>"
 pkg.homepage: "http://mynewt.apache.org/"
 pkg.keywords:
