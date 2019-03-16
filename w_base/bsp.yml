@@ -20,15 +20,15 @@
 bsp.arch: cortex_m3
 bsp.compiler: '@apache-mynewt-core/compiler/arm-none-eabi-m3'
 bsp.linkerscript:
-    - "stm32l152.ld"
+    - "w_base/stm32l152.ld"
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx/stm32l152.ld"
 bsp.linkerscript.BOOT_LOADER.OVERWRITE:
-    - "boot-stm32l152.ld"
+    - "w_base/boot-stm32l152.ld"
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx/stm32l152.ld"
-bsp.downloadscript: "stlink-v2_download.sh"
-bsp.debugscript: "stlink-v2_debug.sh"
-bsp.downloadscript.WINDOWS.OVERWRITE: "stlink-v2_download.cmd"
-bsp.debugscript.WINDOWS.OVERWRITE: "stlink-v2_debug.cmd"
+bsp.downloadscript: "w_base/stlink-v2_download.sh"
+bsp.debugscript: "w_base/stlink-v2_debug.sh"
+bsp.downloadscript.WINDOWS.OVERWRITE: "w_base/stlink-v2_download.cmd"
+bsp.debugscript.WINDOWS.OVERWRITE: "w_base/stlink-v2_debug.cmd"
 
 bsp.flash_map:
     areas:
