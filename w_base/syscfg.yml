@@ -24,7 +24,7 @@ syscfg.defs:
 
 
     UART_0:
-        description: 'UART 0'
+        description: 'UART 0 (STM32 uart1) enabled'
         value:  1
 
     TIMER_0:
@@ -39,19 +39,28 @@ syscfg.defs:
         description: 'Timer 2'
         value:  0
 
+    USE_BUS_I2C:
+        description: "use bus driver type access for I2C or hal?"
+        value: 0
+        
+    # overwrite/set module required card specific hardware mappings
 syscfg.vals:
     REBOOT_LOG_FLASH_AREA: FLASH_AREA_REBOOT_LOG
     CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
     COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
 
-        
-# Below : non-working config related to the LORA management
-    SPI_1_MASTER: 1
-    SPI_1_MASTER_PIN_SCK: PA_5
-    SPI_1_MASTER_PIN_MOSI: PA_7
-    SPI_1_MASTER_PIN_MISO: PA_6
+    # enable I2C0 (STM32 doc I2C1)
+    I2C_0: 1
 
+    # enabled SPI0 (STM32 doc SPI1) as master
+    SPI_0_MASTER: 1
+    SPI_1_MASTER: 0
+
+    # W_BASE v2 card hardware
+    LED1 : PA_0
+    LED2 : PA_15
+    
     SX1272: 1
     SX1272_DIO_0: PB_1
     SX1272_DIO_1: PB_10
@@ -60,7 +69,9 @@ syscfg.vals:
     SX1272_DIO_4: PB_5
     SX1272_DIO_5: PB_4
     SX1272_NSS: PB_0
-    SX1272_SPI: 1
-    SX1272_SPI_IDX: 1
+    SX1272_SPI: 0
+    SX1272_SPI_IDX: 0
     SX1272_RESET: PA_2
+    SX1272_RFSW_RX: PC13
+    SX1272_RFSW_TX: PA4
     LORAWAN_API_TRACE_ACTIVATION: 1

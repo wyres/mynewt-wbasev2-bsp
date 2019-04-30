@@ -22,6 +22,7 @@
 #include <inttypes.h>
 #include <mcu/mcu.h>
 #include "stm32l151xc.h"
+#include "bsp/bsp_defs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,15 +40,6 @@ extern uint8_t _ram_start;
 
 #define RAM_SIZE        (32 * 1024)
 
-/* LED pins */
-#define LED_BLINK_PIN   MCU_GPIO_PORTA(0)
-#define LED_2           MCU_GPIO_PORTA(15)
-#define BUTTON          MCU_GPIO_PORTB(3)
-
-
-
-/* UART */
-#define UART_CNT 1
 
 #ifdef __cplusplus
 }

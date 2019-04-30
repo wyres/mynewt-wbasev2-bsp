@@ -24,29 +24,57 @@
 extern "C" {
 #endif
 
-//LORA
-
-/*
-#define SX1272_DIO_0 	MCU_GPIO_PORTB(1)	 //ok
-#define SX1272_DIO_1 	MCU_GPIO_PORTB(10)	 //ok
-#define SX1272_DIO_2 	MCU_GPIO_PORTB(11)	 //ok
-#define SX1272_DIO_3 	MCU_GPIO_PORTB(7)	 //ok
-#define SX1272_DIO_4 	MCU_GPIO_PORTB(5)	 //ok
-#define SX1272_DIO_5 	MCU_GPIO_PORTB(4)	 //ok
-#define SX1272_NSS 	    MCU_GPIO_PORTB(0)	 //ok
-#define SX1272_RESET 	MCU_GPIO_PORTA(2)	 //ok
-*/
+// The board specific definitions in here for BSP supplied code.
 
 
-//SPI
-#define RADIO_MOSI MCU_GPIO_PORTA(7);
-#define RADIO_MISO MCU_GPIO_PORTA(6);
-#define RADIO_SCLK MCU_GPIO_PORTA(5);
+/* UART */
+#define UART_CNT 1
+// mynewt device name to access uarts. Note name is mynewt, STM32 doc pin labelling has UART1/2/3
+#define UART0_DEV "uart0"
+#define UART1_DEV "uart1"
+#define UART2_DEV "uart2"
 
+#define I2C0_DEV "i2c0"         // mynewt bus device name for the I2C1 bus (STM32 numbering)
+#define ALTI_NODE "alt0"        // mynewt bus node name for the altimeter
+#define ACC_NODE "acc0"          // mynewt bus node name for the accelero
 
+// Mappings for generic code modules are in the syscfg
 
-//#define BSP_UART_TX MCU_GPIO_PORTA(9)
-//#define BSP_UART_RX MCU_GPIO_PORTA(10)
+/* GPIO  type pins */
+#define LED_1           MCU_GPIO_PORTA(0)
+#define LED_2           MCU_GPIO_PORTA(15)
+#define LED_BLINK_PIN   LED_1
+#define BUTTON          MCU_GPIO_PORTB(3)
+
+#define LIGHT_SENSOR    MCU_GPIO_PORTA(3)
+#define EXT_IO          MCU_GPIO_PORTA(8)
+#define EXT_BUTTON      MCU_GPIO_PORTB(3)
+#define SPEAKER         MCU_GPIO_PORTA(1)
+#define EXT_UART_PWR    MCU_GPIO_PORTA(11)
+#define EXT_I2C_PWR     MCU_GPIO_PORTA(12)
+#define SENSOR_PWR      MCU_GPIO_PORTB(6)
+
+// ALtimetre I2C chan/addr
+#define ALTIMETER_I2C_CHAN 0
+#define ALTIMETER_I2C_ADDR 0x5D
+// accelerometer I2C chan/addr
+#define ACCELERO_I2C_CHAN  0
+#define ACCELERO_I2C_ADDR  0x19
+//#define Microphone IIS config?
+
+// I2C0 is first I2C on STM32 (called I2C1 in pinout doc)
+#define I2C_0_SDA       MCU_GPIO_PORTB(9)
+#define I2C_0_SCL       MCU_GPIO_PORTB(8)
+
+// SPI0 is mynewt numbering, but SPI1 is STM32 name for first SPI. 
+#define SPI_0_MASTER_PIN_MOSI MCU_GPIO_PORTA(7)
+#define SPI_0_MASTER_PIN_MISO MCU_GPIO_PORTA(6)
+#define SPI_0_MASTER_PIN_SCK MCU_GPIO_PORTA(5)
+#define SPI_0_MASTER_PIN_NSS  MCU_GPIO_PORTB(0)
+
+// ditto for UART
+#define BSP_UART_0_TX MCU_GPIO_PORTA(9)
+#define BSP_UART_0_RX MCU_GPIO_PORTA(10)
 
 #ifdef __cplusplus
 }

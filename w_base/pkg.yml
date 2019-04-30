@@ -32,6 +32,8 @@ pkg.cflags: -DSTM32L151xC -DREGION_EU868
 pkg.deps:
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx"
     - "@apache-mynewt-core/libc/baselibc"
+    - "@apache-mynewt-core/hw/bus/drivers/i2c_common"
+    - "@apache-mynewt-core/hw/bus/drivers/i2c_hal"
 
 pkg.deps.UART_0:
     - "@apache-mynewt-core/hw/drivers/uart/uart_hal"

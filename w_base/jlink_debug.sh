@@ -22,30 +22,15 @@
 #  - BSP_PATH is absolute path to hw/bsp/bsp_name
 #  - BIN_BASENAME is the path to prefix to target binary,
 #    .elf appended to name is the ELF file
-#  - IMAGE_SLOT is the image slot to download to (for non-mfg-image, non-boot)
 #  - FEATURES holds the target features string
 #  - EXTRA_JTAG_CMD holds extra parameters to pass to jtag software
-#  - MFG_IMAGE is "1" if this is a manufacturing image
-#  - FLASH_OFFSET contains the flash offset to download to
-#  - BOOT_LOADER is set if downloading a bootloader
-#FLASH_OFFSET=0x8000000
-#IMAGE_SLOT=0
-#CORE_PATH=/mnt/c/dev/wProto-MyNewt/wProtoMyNewt/repos/apache-mynewt-core
-#BSP_PATH=C:/dev/wProto-MyNewt/wProtoMyNewt/hw/bsp/wyresRevB-BasedStm32l152discovery
-#BSP_PATH2=/mnt/C/dev/wProto-MyNewt/wProtoMyNewt/hw/bsp/wyresRevB-BasedStm32l152discovery
-#BIN_BASENAME=bin/targets/wyresRevB_bootloader/app/boot/mynewt/mynewt
+#  - RESET set if target should be reset when attaching
+#  - NO_GDB set if we should not start gdb to debug
+#
+. $CORE_PATH/hw/scripts/jlink.sh
 
-. $CORE_PATH/hw/scripts/openocd.sh
+FILE_NAME=$BIN_BASENAME.elf
+CFG="-s $BSP_PATH -f $BSP_PATH/jlink.cfg"
+JLINK_DEV="STM32L152CC"
 
-CFG="-s $BSP_PATH -f l152discovery.cfg"
-echo "1. $CFG"
-if [ "$MFG_IMAGE" ]; then
-    FLASH_OFFSET=0x08000000
-fi
-echo "2."
-common_file_to_load
-echo "3."
-openocd_load
-echo "4."
-openocd_reset_run
-echo "5."
+jlink_debug
