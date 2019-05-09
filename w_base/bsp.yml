@@ -20,8 +20,10 @@
 bsp.arch: cortex_m3
 bsp.compiler: '@apache-mynewt-core/compiler/arm-none-eabi-m3'
 bsp.linkerscript:
-    - "w_base/stm32l152.ld"
+    - "w_base/app-stm32l152.ld"
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx/stm32l152.ld"
+    - "w_base/app-dmz-stm32l15x.ld"
+
 bsp.linkerscript.BOOT_LOADER.OVERWRITE:
     - "w_base/boot-stm32l152.ld"
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx/stm32l152.ld"
@@ -50,12 +52,12 @@ bsp.flash_map:
             size: 16kB
         FLASH_AREA_IMAGE_0:
             device: 0
-            offset: 0x0800a000
-            size: 104kB
+            offset: 0x0800c000
+            size: 100kB
         FLASH_AREA_IMAGE_1:
             device: 0
-            offset: 0x08024000
-            size: 104kB
+            offset: 0x08025000
+            size: 100kB
         FLASH_AREA_IMAGE_SCRATCH:
             device: 0
             offset: 0x0803e000
@@ -65,10 +67,10 @@ bsp.flash_map:
         FLASH_AREA_REBOOT_LOG:
             user_id: 0
             device: 0
-            offset: 0x08004000
-            size: 8kB
+            offset: 0x08007000
+            size: 4kB
         FLASH_AREA_NFFS:
             user_id: 1
             device: 0
-            offset: 0x08006000
+            offset: 0x08008000
             size: 16kB

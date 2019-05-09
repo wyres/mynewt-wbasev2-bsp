@@ -22,9 +22,15 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx) :  ORIGIN = 0x0800a000, LENGTH = 104K /* First image slot. */
+  FLASH (rx) :  ORIGIN = 0x0800c000, LENGTH = 100K /* First image slot. */
   RAM (rwx) :   ORIGIN = 0x20000000, LENGTH = 32K
 }
 
 /* This linker script is used for images and thus contains an image header */
 _imghdr_size = 0x20;
+
+/* Estimated size for the stack area reservation */
+_stack_size = 0x250;
+
+/* Size of the Demilitarized Zone, with the maggic pattern, between Stack & Heap */
+_dmz_size = 0x10;

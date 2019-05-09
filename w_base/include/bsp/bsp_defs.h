@@ -65,12 +65,15 @@ extern "C" {
 // I2C0 is first I2C on STM32 (called I2C1 in pinout doc)
 #define I2C_0_SDA       MCU_GPIO_PORTB(9)
 #define I2C_0_SCL       MCU_GPIO_PORTB(8)
+#define I2C_0_FREQUENCY (100000)
 
 // SPI0 is mynewt numbering, but SPI1 is STM32 name for first SPI. 
 #define SPI_0_MASTER_PIN_MOSI MCU_GPIO_PORTA(7)
 #define SPI_0_MASTER_PIN_MISO MCU_GPIO_PORTA(6)
 #define SPI_0_MASTER_PIN_SCK MCU_GPIO_PORTA(5)
 #define SPI_0_MASTER_PIN_NSS  MCU_GPIO_PORTB(0)
+#define SPI_0_IRQ_PRIO (2)
+#define SPI_0_BAUDRATE (3000)
 
 // ditto for UART
 #define BSP_UART_0_TX MCU_GPIO_PORTA(9)

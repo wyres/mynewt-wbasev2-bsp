@@ -28,8 +28,8 @@ syscfg.defs:
         value:  1
 
     TIMER_0:
-        description: 'Timer 0'
-        value:  0
+        description: 'Timer 0 (timer2 in STM in fact, used by OS)'
+        value:  1
 
     TIMER_1:
         description: 'Timer 1'
@@ -42,6 +42,10 @@ syscfg.defs:
     USE_BUS_I2C:
         description: "use bus driver type access for I2C or hal?"
         value: 0
+
+    RTC:
+        description: 'RTC activation'
+        value: 0
         
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
@@ -49,6 +53,8 @@ syscfg.vals:
     CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
     COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
+    # timer for OS to use by default in the BSP : Timer0
+    OS_CPUTIME_TIMER_NUM: 0
 
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
@@ -69,9 +75,11 @@ syscfg.vals:
     SX1272_DIO_4: PB_5
     SX1272_DIO_5: PB_4
     SX1272_NSS: PB_0
-    SX1272_SPI: 0
+    # SPI_1 is STM32 naming, index is 0
+    SX1272_SPI: SPI_1
     SX1272_SPI_IDX: 0
     SX1272_RESET: PA_2
     SX1272_RFSW_RX: PC13
     SX1272_RFSW_TX: PA4
     LORAWAN_API_TRACE_ACTIVATION: 1
+

@@ -27,10 +27,11 @@ pkg.keywords:
     - stm32l1
     - discovery
 
-pkg.cflags: -DSTM32L151xC -DREGION_EU868
+pkg.cflags: -DSTM32L151xC
 
 pkg.deps:
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx"
+    # MUST have dependancy baselibc as otherwise STM MCU code won't compile... (depends on baselibc assert.h to include sysdefs.h)
     - "@apache-mynewt-core/libc/baselibc"
     - "@apache-mynewt-core/hw/bus/drivers/i2c_common"
     - "@apache-mynewt-core/hw/bus/drivers/i2c_hal"

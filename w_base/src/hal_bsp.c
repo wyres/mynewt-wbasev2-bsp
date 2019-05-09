@@ -50,7 +50,9 @@
 #include <mcu/stm32l1_bsp.h>
 #include "mcu/stm32l1xx_mynewt_hal.h"
 #include "mcu/stm32_hal.h"
-//#include "hal/hal_i2c.h"
+#if MYNEWT_VAL(RTC)
+#include "hal/hal_rtc.h"
+#endif
 
 #include "bsp/bsp.h"
 
@@ -107,7 +109,7 @@ static struct stm32_hal_i2c_cfg i2c0_cfg = {
     .hic_pin_scl = I2C_0_SCL,         // ok
     .hic_pin_af = GPIO_AF4_I2C1,
     .hic_10bit = 0,
-    .hic_speed = 100000                     // 100kHz 
+    .hic_speed = I2C_0_FREQUENCY                     // 100kHz 
 };
 #endif /* USE_BUS_I2C */
 
@@ -120,7 +122,7 @@ struct stm32_hal_spi_cfg spi0_cfg = {
     .sck_pin  = SPI_0_MASTER_PIN_SCK,
     .miso_pin = SPI_0_MASTER_PIN_MISO,
     .mosi_pin = SPI_0_MASTER_PIN_MOSI, 
-    .irq_prio = 2,
+    .irq_prio = SPI_0_IRQ_PRIO,
 };
 #endif
 #if MYNEWT_VAL(SPI_1_SLAVE) || MYNEWT_VAL(SPI_1_MASTER)
@@ -129,9 +131,18 @@ struct stm32_hal_spi_cfg spi1_cfg = {
     .sck_pin  = SPI_1_MASTER_PIN_SCK,     
     .miso_pin = SPI_1_MASTER_PIN_MISO, 
     .mosi_pin = SPI_1_MASTER_PIN_MOSI, 
-    .irq_prio = 2,
+    .irq_prio = SPI_1_IRQ_PRIO,
 };
 #endif
+
+#if MYNEWT_VAL(RTC)
+struct stm32_hal_rtc_cfg rtc_cfg = {
+    .hrc_hour_fmt = 24,
+    .hrc_a_prediv = 31,
+    .hrc_s_prediv = 1023
+};
+#endif
+
 
 static const struct hal_bsp_mem_dump dump_cfg[] = {
     [0] = {
@@ -198,6 +209,21 @@ clock_config(void)
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
         assert(0);
     }
+    
+
+#if MYNEWT_VAL(I2C_0) || MYNEWT_VAL(RTC) || MYNEWT_VAL(RNG)
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+#if MYNEWT_VAL(RTC)
+     PeriphClkInit.PeriphClockSelection |= RCC_PERIPHCLK_RTC;
+     PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+#endif
+
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+        assert(0);
+    }
+#endif
 }
 
 void
@@ -216,15 +242,22 @@ hal_bsp_init(void)
 #endif
 
 #if MYNEWT_VAL(TIMER_0)
-    hal_timer_init(0, TIM9);
+    hal_timer_init(0, TIM2);
 #endif
 
 #if MYNEWT_VAL(TIMER_1)
-    hal_timer_init(1, TIM10);
+    hal_timer_init(1, TIM3);
 #endif
 
 #if MYNEWT_VAL(TIMER_2)
-    hal_timer_init(2, TIM11);
+    hal_timer_init(2, TIM4);
+#endif
+
+#if (MYNEWT_VAL(OS_CPUTIME_TIMER_NUM) >= 0)
+/* KLK
+    rc = os_cputime_init(MYNEWT_VAL(OS_CPUTIME_FREQ));
+    assert(rc == 0);
+    */
 #endif
 
 // note : SPI0 is SPI1 in STM32 doc
@@ -246,6 +279,11 @@ hal_bsp_init(void)
 
 #if MYNEWT_VAL(SPI_1_SLAVE)
     rc = hal_spi_init(1, &spi1_cfg, HAL_SPI_TYPE_SLAVE);
+    assert(rc == 0);
+#endif
+
+#if MYNEWT_VAL(RTC)
+    rc = hal_rtc_init(&rtc_cfg);
     assert(rc == 0);
 #endif
 
@@ -286,7 +324,8 @@ hal_bsp_get_nvic_priority(int irq_num, uint32_t pri)
     /* Add any interrupt priorities configured by the bsp here */
     return pri;
 }
-
+#if MYNEWT_VAL(I2C_0)
+#if MYNEWT_VAL(USE_BUS_I2C)
 // need these as STM32 MCU HAL code does NOT define them, and the I2C mynewt driver code requires them
 int hal_i2c_disable(uint8_t n) {
     return 0;
@@ -300,3 +339,6 @@ int hal_i2c_init_hw(uint8_t i2c_num, const struct hal_i2c_hw_settings *cfg) {
 int hal_i2c_config(uint8_t i2c_num, const struct hal_i2c_settings *cfg) {
     return 0;
 }
+#endif /* USE_BUS_I2C */
+#endif
+
