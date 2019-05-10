@@ -79,6 +79,9 @@ syscfg.vals:
     SX1272_SPI: SPI_1
     SX1272_SPI_IDX: 0
     SX1272_RESET: PA_2
-    SX1272_RFSW_RX: PC13
-    SX1272_RFSW_TX: PA4
+    # antenna rx/tx switch management is independant of the radio type 
+    # if it is managed by the radio chip directly, no gpio defs required, leave all at -1
+    # TX GPIO is pulled high for tx, low for rx. RX GPIO is inverse. Define whichever you need
+    RADIO_ANT_SWITCH_TX: PA_4
+    RADIO_ANT_SWITCH_RX: PC_13
 
