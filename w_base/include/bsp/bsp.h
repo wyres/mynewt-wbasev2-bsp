@@ -40,6 +40,11 @@ extern uint8_t _ram_start;
 
 #define RAM_SIZE        (32 * 1024)
 
+int BSP_getHwVer();
+void BSP_antSwInit(int txPin, int rxPin);
+void BSP_antSwDeInit(int txPin, int rxPin);
+void BSP_antSwTx(int txPin, int rxPin);
+void BSP_antSwRx(int txPin, int rxPin);
 
 #ifdef __cplusplus
 }

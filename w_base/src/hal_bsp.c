@@ -342,3 +342,46 @@ int hal_i2c_config(uint8_t i2c_num, const struct hal_i2c_settings *cfg) {
 #endif /* USE_BUS_I2C */
 #endif
 
+int BSP_getHwVer() {
+    // This is a dynamic value written in the PROM
+    // TODO
+    return 2;       // RevC
+}
+// BSP specific functions to set the radio antenna switch correctly
+// For W_BASE card, 2 pins are ALWAYS required (revB or revC or later)
+void BSP_antSwInit(int txPin, int rxPin) {
+    assert(txPin!=-1);
+    assert(rxPin!=-1);
+    hal_gpio_init_out(txPin, 0);
+    hal_gpio_init_out(rxPin, 0);
+}
+void BSP_antSwDeInit(int txPin, int rxPin) {
+    assert(txPin!=-1);
+    assert(rxPin!=-1);
+    hal_gpio_init_in(txPin, HAL_GPIO_PULL_NONE);
+    hal_gpio_init_in(rxPin, HAL_GPIO_PULL_NONE);
+}
+void BSP_antSwTx(int txPin, int rxPin) {
+    assert(txPin!=-1);
+    assert(rxPin!=-1);
+    if (BSP_getHwVer()<2) {     // proto or revB
+        hal_gpio_write(txPin, 1);
+        hal_gpio_write(rxPin, 0);
+    } else {
+        hal_gpio_write(txPin, 0);
+        hal_gpio_write(rxPin, 1);
+    }
+}
+void BSP_antSwRx(int txPin, int rxPin) {
+    assert(txPin!=-1);
+    assert(rxPin!=-1);
+    if (BSP_getHwVer()<2) {     // proto or revB
+        hal_gpio_write(txPin, 0);
+        hal_gpio_write(rxPin, 1);
+    } else {
+        hal_gpio_write(txPin, 1);
+        hal_gpio_write(rxPin, 1);
+
+    }
+}
+
