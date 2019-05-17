@@ -27,7 +27,7 @@ pkg.keywords:
     - stm32l1
     - discovery
 
-pkg.cflags: -DSTM32L151xC
+pkg.cflags: -DSTM32L151xC -DSTM32L152xC
 
 pkg.deps:
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx"
@@ -38,4 +38,6 @@ pkg.deps:
 
 pkg.deps.UART_0:
     - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
+pkg.deps.UART_DBG:
+    - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
 

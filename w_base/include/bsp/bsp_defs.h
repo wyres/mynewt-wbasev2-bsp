@@ -33,6 +33,7 @@ extern "C" {
 #define UART0_DEV "uart0"
 #define UART1_DEV "uart1"
 #define UART2_DEV "uart2"
+#define UARTDBG_DEV "uartdbg"
 
 #define I2C0_DEV "i2c0"         // mynewt bus device name for the I2C1 bus (STM32 numbering)
 #define ALTI_NODE "alt0"        // mynewt bus node name for the altimeter
@@ -78,6 +79,10 @@ extern "C" {
 // ditto for UART
 #define BSP_UART_0_TX MCU_GPIO_PORTA(9)
 #define BSP_UART_0_RX MCU_GPIO_PORTA(10)
+
+// debug uart does bitbang on a gpio (optional)
+#define BSP_UART_DBG_TX MYNEWT_VAL(UART_DBG_TX)
+#define BSP_UART_DBG_RX MYNEWT_VAL(UART_DBG_RX)
 
 #ifdef __cplusplus
 }

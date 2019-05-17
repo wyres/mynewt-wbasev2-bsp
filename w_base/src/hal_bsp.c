@@ -20,9 +20,14 @@
 
 #include "os/mynewt.h"
 
-#if MYNEWT_VAL(UART_0)
+#if MYNEWT_VAL(UART_0) || MYNEWT_VAL(UART_DBG)
 #include <uart/uart.h>
+#endif
+#if MYNEWT_VAL(UART_0)
 #include <uart_hal/uart_hal.h>
+#endif
+#if MYNEWT_VAL(UART_DBG)
+#include <uart_bitbang/uart_bitbang.h>
 #endif
 
 #include <hal/hal_bsp.h>
@@ -72,6 +77,16 @@ static const struct stm32_uart_cfg uart_cfg[UART_CNT] = {
         .suc_pin_af = GPIO_AF7_USART1,
         .suc_irqn = USART1_IRQn
     }
+};
+#endif
+
+// UartDbg is bitbang on a gpio
+#if MYNEWT_VAL(UART_DBG)
+static struct uart_dev hal_uartdbg;
+static const struct uart_bitbang_conf uartdbg_cfg = {
+    .ubc_rxpin = BSP_UART_DBG_RX,
+    .ubc_txpin = BSP_UART_DBG_TX,
+    .ubc_cputimer_freq = MYNEWT_VAL(OS_CPUTIME_FREQ),
 };
 #endif
 
@@ -241,6 +256,13 @@ hal_bsp_init(void)
     assert(rc == 0);
 #endif
 
+#if MYNEWT_VAL(UART_DBG)
+    assert(BSP_UART_DBG_TX!=-1);        // mst define at least tx pin
+    rc = os_dev_create((struct os_dev *) &hal_uartdbg, UARTDBG_DEV,
+      OS_DEV_INIT_PRIMARY, 0, uart_bitbang_init, (void *)&uartdbg_cfg);
+    assert(rc == 0);
+#endif
+
 #if MYNEWT_VAL(TIMER_0)
     hal_timer_init(0, TIM2);
 #endif
@@ -254,10 +276,8 @@ hal_bsp_init(void)
 #endif
 
 #if (MYNEWT_VAL(OS_CPUTIME_TIMER_NUM) >= 0)
-/* KLK
     rc = os_cputime_init(MYNEWT_VAL(OS_CPUTIME_FREQ));
     assert(rc == 0);
-    */
 #endif
 
 // note : SPI0 is SPI1 in STM32 doc
