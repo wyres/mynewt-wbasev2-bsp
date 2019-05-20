@@ -18,6 +18,26 @@
 #
 
 syscfg.defs:
+
+    OPENOCD_STLINK:
+        description: "using openOCD with STLINK for debug/load"
+        value: 0
+    OPENOCD_STLINK_WINDOWS:
+        description: "using openOCD with STLINK for debug/load on windows"
+        value: 0
+    OPENOCD_JLINK:
+        description: "using openOCD with JLINK for debug/load"
+        value: 0
+    OPENOCD_JLINK_WINDOWS:
+        description: "using openOCD with JLINK for debug/load on windows"
+        value: 0
+    SEGGER_JLINK:
+        description: "using segger with JLINK for debug/load"
+        value: 0
+    SEGGER_JLINK_WINDOWS:
+        description: "using segger with JLINK for debug/load on windows"
+        value: 0
+
     STM32_FLASH_SIZE_KB:
         description: 'Total flash size in KB.'
         value: 256
