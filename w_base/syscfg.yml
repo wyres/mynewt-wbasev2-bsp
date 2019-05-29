@@ -97,8 +97,8 @@ syscfg.vals:
     SPI_1_MASTER: 0
 
     # W_BASE v2 card hardware
-    LED1 : PA_0
-    LED2 : PA_15
+#    LED1 : PA_0
+#    LED2 : PA_15
     
     SX1272: 1
     SX1272_DIO_0: PB_1
