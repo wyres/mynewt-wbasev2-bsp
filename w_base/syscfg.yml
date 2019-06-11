@@ -41,6 +41,9 @@ syscfg.defs:
     STM32_FLASH_SIZE_KB:
         description: 'Total flash size in KB.'
         value: 256
+    PROM_START:
+        description: "PROM start address - this should come from the bsp.yml definition but how?"
+        value: 0x08080000
 
 
     UART_0:

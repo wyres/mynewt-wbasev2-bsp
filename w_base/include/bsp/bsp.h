@@ -20,6 +20,8 @@
 #define H_BSP_H
 
 #include <inttypes.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <mcu/mcu.h>
 #include "stm32l151xc.h"
 #include "bsp/bsp_defs.h"
@@ -38,7 +40,18 @@ extern "C" {
 
 extern uint8_t _ram_start;
 
-#define RAM_SIZE        (32 * 1024)
+#define RAM_SIZE    (32 * 1024)
+#define PROM_SIZE   (8*1024)
+
+void nvmLock();
+void nvmUnlock();
+uint8_t nvmRead8(uint16_t off);
+uint16_t nvmRead16(uint16_t off);
+bool nvmRead(uint16_t off, uint8_t len, uint8_t* buf);
+void nvmWrite8(uint16_t off, uint8_t v);
+void nvmWrite16(uint16_t off, uint16_t v);
+bool nvmWrite(uint16_t off, uint8_t len, uint8_t* buf);
+uint16_t nvmSize();
 
 int BSP_getHwVer();
 void BSP_antSwInit(int txPin, int rxPin);
