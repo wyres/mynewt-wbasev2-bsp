@@ -43,13 +43,14 @@ extern uint8_t _ram_start;
 #define RAM_SIZE    (32 * 1024)
 #define PROM_SIZE   (8*1024)
 
-void nvmLock();
-void nvmUnlock();
+bool nvmLock();
+bool nvmUnlock();
+// Read and write PROM. It is caller's responsibility to nvmUnlock() before access and nvmLock() afterwards
 uint8_t nvmRead8(uint16_t off);
 uint16_t nvmRead16(uint16_t off);
 bool nvmRead(uint16_t off, uint8_t len, uint8_t* buf);
-void nvmWrite8(uint16_t off, uint8_t v);
-void nvmWrite16(uint16_t off, uint16_t v);
+bool nvmWrite8(uint16_t off, uint8_t v);
+bool nvmWrite16(uint16_t off, uint16_t v);
 bool nvmWrite(uint16_t off, uint8_t len, uint8_t* buf);
 uint16_t nvmSize();
 

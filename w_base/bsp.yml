@@ -84,5 +84,5 @@ bsp.flash_map:
 bsp.eeprom_map:
         EEPROM_AREA:
             user_id: 0
-            offset: 0x08010000
+            offset: 0x08080000
             size: 8kb

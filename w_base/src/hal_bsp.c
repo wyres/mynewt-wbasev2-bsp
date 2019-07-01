@@ -371,11 +371,11 @@ int hal_i2c_config(uint8_t i2c_num, const struct hal_i2c_settings *cfg) {
 uint16_t nvmSize() {
     return PROM_SIZE;
 }
-void nvmLock() {
-    HAL_FLASHEx_DATAEEPROM_Lock();
+bool nvmLock() {
+    return (HAL_FLASHEx_DATAEEPROM_Lock()==HAL_OK);
 }
-void nvmUnlock() {
-    HAL_FLASHEx_DATAEEPROM_Unlock();
+bool nvmUnlock() {
+    return (HAL_FLASHEx_DATAEEPROM_Unlock()==HAL_OK);
 }
 uint8_t nvmRead8(uint16_t off) {
     return *((volatile uint8_t*)(PROM_BASE+off));
@@ -384,29 +384,26 @@ uint16_t nvmRead16(uint16_t off) {
     return *((volatile uint16_t*)(PROM_BASE+off));
 }
 bool nvmRead(uint16_t off, uint8_t len, uint8_t* buf) {
-    nvmUnlock();
     for(int i=0;i<len;i++) {
         *(buf+i) = nvmRead8(off+i);
     }
-    nvmLock();
     return true;
 }
 
-void nvmWrite8(uint16_t off, uint8_t v) {
-//    HAL_FLASHEx_DATAEEPROM_Erase(FLASH_TYPEERASEDATA_BYTE, PROM_START+off);
-    HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_FASTBYTE, ((uint32_t)PROM_BASE)+off, v);
+bool nvmWrite8(uint16_t off, uint8_t v) {
+    HAL_FLASHEx_DATAEEPROM_Erase(FLASH_TYPEERASEDATA_BYTE, ((uint32_t)PROM_BASE)+off);
+    return (HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_FASTBYTE, ((uint32_t)PROM_BASE)+off, v)==HAL_OK);
 }
-void nvmWrite16(uint16_t off, uint16_t v) {
-//    HAL_FLASHEx_DATAEEPROM_Erase(FLASH_TYPEERASEDATA_WORD, PROM_START+off);
-    HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_FASTWORD, ((uint32_t)PROM_BASE)+off, v);
+bool nvmWrite16(uint16_t off, uint16_t v) {
+    HAL_FLASHEx_DATAEEPROM_Erase(FLASH_TYPEERASEDATA_HALFWORD, ((uint32_t)PROM_BASE)+off);
+    return (HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_FASTHALFWORD, ((uint32_t)PROM_BASE)+off, v)==HAL_OK);
 }
 bool nvmWrite(uint16_t off, uint8_t len, uint8_t* buf) {
-    nvmUnlock();
+    bool ret = true;
     for(int i=0;i<len;i++) {
-        nvmWrite8(off+i, *(buf+i));
+        ret &= nvmWrite8(off+i, *(buf+i));
     }
-    nvmLock();
-    return true;
+    return ret;
 }
 
 int BSP_getHwVer() {
