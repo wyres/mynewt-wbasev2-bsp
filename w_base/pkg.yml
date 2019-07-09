@@ -41,3 +41,8 @@ pkg.deps.UART_0:
 pkg.deps.UART_DBG:
     - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
 
+pkg.cflags.ADC:
+    -DHAL_ADC_MODULE_ENABLED
+pkg.cflags.BATTERY_CHECK:
+    -DHAL_ADC_MODULE_ENABLED
+

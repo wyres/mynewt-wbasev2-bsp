@@ -19,6 +19,8 @@
 #ifndef H_BSP_DEFS_H
 #define H_BSP_DEFS_H
 
+#include "stm32l1xx_hal_dma.h"
+#include "stm32l1xx_hal_adc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,18 +44,23 @@ extern "C" {
 // Mappings for generic code modules are in the syscfg
 
 /* GPIO  type pins */
-#define LED_1           MCU_GPIO_PORTA(0)
-#define LED_2           MCU_GPIO_PORTA(15)
+#define LED_1           MCU_GPIO_PORTA(0)       // also ADC input 0
+#define LED_2           MCU_GPIO_PORTA(15)      // No ADC
 #define LED_BLINK_PIN   LED_1
-#define BUTTON          MCU_GPIO_PORTB(3)
 
-#define LIGHT_SENSOR    MCU_GPIO_PORTA(3)
-#define EXT_IO          MCU_GPIO_PORTA(8)
-#define EXT_BUTTON      MCU_GPIO_PORTB(3)
-#define SPEAKER         MCU_GPIO_PORTA(1)
-#define EXT_UART_PWR    MCU_GPIO_PORTA(11)
-#define EXT_I2C_PWR     MCU_GPIO_PORTA(12)
-#define SENSOR_PWR      MCU_GPIO_PORTB(6)
+#define LIGHT_SENSOR    MCU_GPIO_PORTA(3)       // ADC channel 3
+#define LIGHT_SENSOR_ADCCHAN (ADC_CHANNEL_3)
+#define EXT_IO          MCU_GPIO_PORTA(8)       // No ADC
+
+#define EXT_BUTTON      MCU_GPIO_PORTB(3)       // No ADC
+#define BUTTON          (EXT_BUTTON)
+#define SPEAKER         MCU_GPIO_PORTA(1)       // also ADC input 1
+#define EXT_UART_PWR    MCU_GPIO_PORTA(11)      // No ADC
+#define EXT_I2C_PWR     MCU_GPIO_PORTA(12)      // No ADC
+#define SENSOR_PWR      MCU_GPIO_PORTB(6)       // No ADC
+
+#define BATTERY_GPIO    (128)                   // needs a gpio pin number, but of a value that is beyond 'real' ones
+#define BATTERY_ADCCHAN (ADC_CHANNEL_VREFINT)
 
 // ALtimetre I2C chan/addr
 #define ALTIMETER_I2C_CHAN 0
@@ -64,8 +71,8 @@ extern "C" {
 //#define Microphone IIS config?
 
 // I2C0 is first I2C on STM32 (called I2C1 in pinout doc)
-#define I2C_0_SDA       MCU_GPIO_PORTB(9)
-#define I2C_0_SCL       MCU_GPIO_PORTB(8)
+#define I2C_0_SDA       MCU_GPIO_PORTB(9)          // No ADC
+#define I2C_0_SCL       MCU_GPIO_PORTB(8)           // No ADC
 #define I2C_0_FREQUENCY (100000)
 
 // SPI0 is mynewt numbering, but SPI1 is STM32 name for first SPI. 
@@ -77,8 +84,8 @@ extern "C" {
 #define SPI_0_BAUDRATE (3000)
 
 // ditto for UART
-#define BSP_UART_0_TX MCU_GPIO_PORTA(9)
-#define BSP_UART_0_RX MCU_GPIO_PORTA(10)
+#define BSP_UART_0_TX MCU_GPIO_PORTA(9)             // No ADC
+#define BSP_UART_0_RX MCU_GPIO_PORTA(10)            // No ADC
 
 // debug uart does bitbang on a gpio (optional)
 #define BSP_UART_DBG_TX MYNEWT_VAL(UART_DBG_TX)

@@ -39,6 +39,15 @@
 #include <hal/hal_flash_int.h>
 #include <hal/hal_timer.h>
 
+#if MYNEWT_VAL(ADC) 
+//#include <adc/adc.h>
+#include "stm32l1xx_hal_adc.h"
+#include "stm32l1xx_hal_rcc.h"
+#include "stm32l1xx_hal.h"
+
+#define MAX_ADC (2)
+#endif
+
 #if MYNEWT_VAL(SPI_0_MASTER) || MYNEWT_VAL(SPI_0_SLAVE) || MYNEWT_VAL(SPI_1_MASTER) || MYNEWT_VAL(SPI_1_SLAVE)
 #include <hal/hal_spi.h>
 #endif
@@ -92,6 +101,15 @@ static const struct uart_bitbang_conf uartdbg_cfg = {
     .ubc_txpin = BSP_UART_DBG_TX,
     .ubc_cputimer_freq = MYNEWT_VAL(OS_CPUTIME_FREQ),
 };
+#endif
+
+#if MYNEWT_VAL(ADC) 
+/*static struct acd_dev hal_adc_dev;
+static const struct stm32_adc_dev_cfg adc_cfg = {
+    .c_refmv=0,
+    .c_res=12,
+    .c_configured=true,
+};*/
 #endif
 
 #if MYNEWT_VAL(I2C_0)
@@ -284,6 +302,14 @@ hal_bsp_init(void)
     assert(rc == 0);
 #endif
 
+#if MYNEWT_VAL(ADC)
+/*  device for adc not yet possible as only STM32F4 driver  
+    rc = os_dev_create((struct os_dev *) &hal_adc, ADC_DEV,
+      OS_DEV_INIT_PRIMARY, 0, adc_hal_init, (void *)&adc_cfg);
+    assert(rc == 0);
+    */
+#endif
+
 // note : SPI0 is SPI1 in STM32 doc
 #if MYNEWT_VAL(SPI_0_MASTER)
     rc = hal_spi_init(0, &spi0_cfg, HAL_SPI_TYPE_MASTER);
@@ -368,40 +394,40 @@ int hal_i2c_config(uint8_t i2c_num, const struct hal_i2c_settings *cfg) {
 
 
 // NVM access - we have a EEPROM on this MCU which is handy
-uint16_t nvmSize() {
+uint16_t hal_bsp_nvmSize() {
     return PROM_SIZE;
 }
-bool nvmLock() {
+bool hal_bsp_nvmLock() {
     return (HAL_FLASHEx_DATAEEPROM_Lock()==HAL_OK);
 }
-bool nvmUnlock() {
+bool hal_bsp_nvmUnlock() {
     return (HAL_FLASHEx_DATAEEPROM_Unlock()==HAL_OK);
 }
-uint8_t nvmRead8(uint16_t off) {
+uint8_t hal_bsp_nvmRead8(uint16_t off) {
     return *((volatile uint8_t*)(PROM_BASE+off));
 }
-uint16_t nvmRead16(uint16_t off) {
+uint16_t hal_bsp_nvmRead16(uint16_t off) {
     return *((volatile uint16_t*)(PROM_BASE+off));
 }
-bool nvmRead(uint16_t off, uint8_t len, uint8_t* buf) {
+bool hal_bsp_nvmRead(uint16_t off, uint8_t len, uint8_t* buf) {
     for(int i=0;i<len;i++) {
-        *(buf+i) = nvmRead8(off+i);
+        *(buf+i) = hal_bsp_nvmRead8(off+i);
     }
     return true;
 }
 
-bool nvmWrite8(uint16_t off, uint8_t v) {
+bool hal_bsp_nvmWrite8(uint16_t off, uint8_t v) {
     HAL_FLASHEx_DATAEEPROM_Erase(FLASH_TYPEERASEDATA_BYTE, ((uint32_t)PROM_BASE)+off);
     return (HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_FASTBYTE, ((uint32_t)PROM_BASE)+off, v)==HAL_OK);
 }
-bool nvmWrite16(uint16_t off, uint16_t v) {
+bool hal_bsp_nvmWrite16(uint16_t off, uint16_t v) {
     HAL_FLASHEx_DATAEEPROM_Erase(FLASH_TYPEERASEDATA_HALFWORD, ((uint32_t)PROM_BASE)+off);
     return (HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_FASTHALFWORD, ((uint32_t)PROM_BASE)+off, v)==HAL_OK);
 }
-bool nvmWrite(uint16_t off, uint8_t len, uint8_t* buf) {
+bool hal_bsp_nvmWrite(uint16_t off, uint8_t len, uint8_t* buf) {
     bool ret = true;
     for(int i=0;i<len;i++) {
-        ret &= nvmWrite8(off+i, *(buf+i));
+        ret &= hal_bsp_nvmWrite8(off+i, *(buf+i));
     }
     return ret;
 }
@@ -449,3 +475,156 @@ void BSP_antSwRx(int txPin, int rxPin) {
     }
 }
 
+/**
+ * Move the system into the specified power state
+ *
+ * @param state The power state to move the system into, this is one of
+ *                 * HAL_BSP_POWER_ON: Full system on
+ *                 * HAL_BSP_POWER_WFI: Processor off, wait for interrupt.
+ *                 * HAL_BSP_POWER_SLEEP: Put the system to sleep
+ *                 * HAL_BSP_POWER_DEEP_SLEEP: Put the system into deep sleep.
+ *                 * HAL_BSP_POWER_OFF: Turn off the system.
+ *                 * HAL_BSP_POWER_PERUSER: From this value on, allow user
+ *                   defined power states.
+ *
+ * @return 0 on success, non-zero if system cannot move into this power state.
+ */
+//int hal_bsp_power_state(int state);
+
+#if MYNEWT_VAL(ADC) 
+// Initialise an adc for basic gpio like use
+static struct {
+    ADC_HandleTypeDef adcHandle[MAX_ADC];
+    bool active[MAX_ADC];
+} _adcs = {
+    .active={ 0 },
+};
+
+bool hal_bsp_adc_init(int adcId) {
+    assert(adcId>=0 && adcId<MAX_ADC);
+    // allow mulitple calls to init without issues
+    if (!_adcs.active[adcId]) {
+        // Configure ADC
+        ADC_HandleTypeDef* adch = &_adcs.adcHandle[adcId];
+        adch->Init.Resolution            = ADC_RESOLUTION_12B;
+        adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
+        adch->Init.ContinuousConvMode    = DISABLE;
+        adch->Init.DiscontinuousConvMode = DISABLE;
+        adch->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
+        adch->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T6_TRGO;
+        adch->Init.DMAContinuousRequests = DISABLE;
+        adch->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
+        adch->Init.NbrOfConversion       = 1;
+        adch->Init.LowPowerAutoWait      = DISABLE;
+        adch->Init.LowPowerAutoPowerOff  = DISABLE;
+        HAL_ADC_Init( adch );
+        // Enable HSI
+        __HAL_RCC_HSI_ENABLE( );
+
+        // Wait till HSI is ready
+        while( __HAL_RCC_GET_FLAG( RCC_FLAG_HSIRDY ) == RESET )
+        {
+        }
+
+        __HAL_RCC_ADC1_CLK_ENABLE( );
+
+        _adcs.active[adcId] = true;
+    }
+    return true;
+}
+
+bool hal_bsp_adc_define(int adcId, int pin, int chan) {
+    // If pin is 'real', define it as analog in?
+//    hal_gpio_init_in(pin, ANALOG?);
+    return true;
+}
+#define ADC_MAX_VALUE                               4095
+#define ADC_VREF_BANDGAP                            1224 // mV
+
+int hal_bsp_adc_readmV(int adcId, int channel) {
+    assert(adcId>=0 && adcId<MAX_ADC);
+    ADC_HandleTypeDef* adch = &_adcs.adcHandle[adcId];
+    ADC_ChannelConfTypeDef adcConf = { 0 };
+    uint16_t adcData = 0;
+/*
+    // Enable HSI
+    __HAL_RCC_HSI_ENABLE( );
+
+    // Wait till HSI is ready
+    while( __HAL_RCC_GET_FLAG( RCC_FLAG_HSIRDY ) == RESET )
+    {
+    }
+
+    __HAL_RCC_ADC1_CLK_ENABLE( );
+*/
+    adcConf.Channel = channel;
+    adcConf.Rank = ADC_REGULAR_RANK_1;
+    adcConf.SamplingTime = ADC_SAMPLETIME_192CYCLES;
+
+    HAL_ADC_ConfigChannel( adch, &adcConf );
+#if 0 
+
+    // Enable ADC1
+    __HAL_ADC_ENABLE( adch );
+
+    // Start ADC Software Conversion
+    HAL_ADC_Start( adch);
+
+    HAL_ADC_PollForConversion( adch, HAL_MAX_DELAY );
+
+    adcData = HAL_ADC_GetValue(adch );
+
+    __HAL_ADC_DISABLE( adch);
+#endif
+/*
+    __HAL_RCC_ADC1_CLK_DISABLE( );
+
+    // Disable HSI
+    __HAL_RCC_HSI_DISABLE( );
+*/
+    int ret_voltage = ( uint32_t )ADC_VREF_BANDGAP * ( uint32_t )ADC_MAX_VALUE;
+    // We don't use the VREF from calibValues here.
+    // calculate the Voltage in millivolt
+    if (adcData>0) {
+        ret_voltage = ret_voltage / ( uint32_t )adcData;
+    }
+
+    return ret_voltage;
+}
+
+void hal_bsp_adc_release(int id, int chan) {
+    // noop? or define as ANALOG for lowest power?
+}
+void hal_bsp_adc_deinit(int adcId) {
+    assert(adcId>=0 && adcId<MAX_ADC);
+    if (_adcs.active[adcId]) {
+        // should use clock relative to adcId TODO
+        __HAL_RCC_ADC1_CLK_DISABLE( );
+
+        // Disable HSI
+        __HAL_RCC_HSI_DISABLE( );
+
+        HAL_ADC_DeInit( &_adcs.adcHandle[adcId] );
+        _adcs.active[adcId] = false;
+    }
+}
+
+#else   /* !ADC */
+
+bool hal_bsp_adc_init(int adcId) {
+    return false;       // no ADC here
+}
+
+bool hal_bsp_adc_define(int adcId, int pin, int chan) {
+    return false;
+}
+
+int hal_bsp_adc_readmV(int adcId, int channel) {
+    return 0;
+}
+
+void hal_bsp_adc_release(int id, int chan) {
+}
+void hal_bsp_adc_deinit(int adcId) {
+}
+#endif  /* ADC */
