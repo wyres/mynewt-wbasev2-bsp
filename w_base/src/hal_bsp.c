@@ -45,7 +45,6 @@
 #include "stm32l1xx_hal_rcc.h"
 #include "stm32l1xx_hal.h"
 
-#define MAX_ADC (2)
 #endif
 
 #if MYNEWT_VAL(SPI_0_MASTER) || MYNEWT_VAL(SPI_0_SLAVE) || MYNEWT_VAL(SPI_1_MASTER) || MYNEWT_VAL(SPI_1_SLAVE)
@@ -494,137 +493,147 @@ void BSP_antSwRx(int txPin, int rxPin) {
 #if MYNEWT_VAL(ADC) 
 // Initialise an adc for basic gpio like use
 static struct {
-    ADC_HandleTypeDef adcHandle[MAX_ADC];
-    bool active[MAX_ADC];
-} _adcs = {
-    .active={ 0 },
+    ADC_HandleTypeDef adcHandle;
+    bool active;
+} _adc1 = {
+    .adcHandle= {        
+        .Instance = ADC1,
+    },
+    .active=false,
 };
 
-bool hal_bsp_adc_init(int adcId) {
-    assert(adcId>=0 && adcId<MAX_ADC);
+bool hal_bsp_adc_init() {
     // allow mulitple calls to init without issues
-    if (!_adcs.active[adcId]) {
+    if (!_adc1.active) {
         // Configure ADC
-        ADC_HandleTypeDef* adch = &_adcs.adcHandle[adcId];
+        ADC_HandleTypeDef* adch = &_adc1.adcHandle;
+        __HAL_RCC_ADC1_CLK_ENABLE( );
+        // First ensure its is in known state (seems odd but if you don't do this then the init fails)
+        HAL_ADC_DeInit( adch );
+        // setup init data
         adch->Init.Resolution            = ADC_RESOLUTION_12B;
         adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
         adch->Init.ContinuousConvMode    = DISABLE;
         adch->Init.DiscontinuousConvMode = DISABLE;
         adch->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
-        adch->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T6_TRGO;
+        adch->Init.ExternalTrigConv      = ADC_SOFTWARE_START;        
         adch->Init.DMAContinuousRequests = DISABLE;
         adch->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
         adch->Init.NbrOfConversion       = 1;
         adch->Init.LowPowerAutoWait      = DISABLE;
         adch->Init.LowPowerAutoPowerOff  = DISABLE;
-        HAL_ADC_Init( adch );
-        // Enable HSI
+        int rc = HAL_ADC_Init( adch );
+        if (rc!=HAL_OK) {
+            return false;   // thats a fail
+        }
+        // Enable HSI - already done in clock setup
+        /* 
         __HAL_RCC_HSI_ENABLE( );
 
         // Wait till HSI is ready
         while( __HAL_RCC_GET_FLAG( RCC_FLAG_HSIRDY ) == RESET )
         {
         }
+        */
+        // Enable ADC1
+        __HAL_ADC_ENABLE( adch );
 
-        __HAL_RCC_ADC1_CLK_ENABLE( );
-
-        _adcs.active[adcId] = true;
+        _adc1.active = true;
     }
     return true;
 }
 
-bool hal_bsp_adc_define(int adcId, int pin, int chan) {
-    // If pin is 'real', define it as analog in?
-//    hal_gpio_init_in(pin, ANALOG?);
-    return true;
-}
-#define ADC_MAX_VALUE                               4095
-#define ADC_VREF_BANDGAP                            1224 // mV
-
-int hal_bsp_adc_readmV(int adcId, int channel) {
-    assert(adcId>=0 && adcId<MAX_ADC);
-    ADC_HandleTypeDef* adch = &_adcs.adcHandle[adcId];
+bool hal_bsp_adc_define(int pin, int chan) {
+    ADC_HandleTypeDef* adch = &_adc1.adcHandle;
     ADC_ChannelConfTypeDef adcConf = { 0 };
-    uint16_t adcData = 0;
-/*
-    // Enable HSI
-    __HAL_RCC_HSI_ENABLE( );
-
-    // Wait till HSI is ready
-    while( __HAL_RCC_GET_FLAG( RCC_FLAG_HSIRDY ) == RESET )
-    {
-    }
-
-    __HAL_RCC_ADC1_CLK_ENABLE( );
-*/
-    adcConf.Channel = channel;
+    adcConf.Channel = chan;
     adcConf.Rank = ADC_REGULAR_RANK_1;
     adcConf.SamplingTime = ADC_SAMPLETIME_192CYCLES;
 
-    HAL_ADC_ConfigChannel( adch, &adcConf );
-#if 0 
+    int rc = HAL_ADC_ConfigChannel( adch, &adcConf );
 
-    // Enable ADC1
-    __HAL_ADC_ENABLE( adch );
+    // If pin is 'real', define it as analog in 
+    if (pin>=0 && pin <128) {
+        /* 
+        GPIO_InitTypeDef gpio_td = {
+            .Pin = pin,
+            .Mode = GPIO_MODE_ANALOG,
+            .Pull = GPIO_NOPULL,
+            .Alternate = pin
+        };
+        hal_gpio_init_stm(gpio_td.Pin, &gpio_td);
+        */
+        // easiest way is to deconfig it as GPIO as does the same without using stm specific hal fn
+        hal_gpio_deinit(pin);
+    }
+    return (rc==HAL_OK);
+}
+
+#define ADC_MAX_VALUE                               4095    // 12 bits max value
+#define ADC_VREF_BANDGAP                            1224    // vRef in mV for ADC
+
+int hal_bsp_adc_readmV(int channel) {
+    ADC_HandleTypeDef* adch = &_adc1.adcHandle;
+    int adcData = 0;
+
 
     // Start ADC Software Conversion
-    HAL_ADC_Start( adch);
+    HAL_ADC_Start(adch);
 
-    HAL_ADC_PollForConversion( adch, HAL_MAX_DELAY );
+    HAL_ADC_PollForConversion(adch, HAL_MAX_DELAY);
 
-    adcData = HAL_ADC_GetValue(adch );
+    adcData = HAL_ADC_GetValue(adch);
 
-    __HAL_ADC_DISABLE( adch);
-#endif
-/*
-    __HAL_RCC_ADC1_CLK_DISABLE( );
-
-    // Disable HSI
-    __HAL_RCC_HSI_DISABLE( );
-*/
-    int ret_voltage = ( uint32_t )ADC_VREF_BANDGAP * ( uint32_t )ADC_MAX_VALUE;
+    int ref_voltage = ( uint32_t )ADC_VREF_BANDGAP * ( uint32_t )ADC_MAX_VALUE;
     // We don't use the VREF from calibValues here.
     // calculate the Voltage in millivolt
     if (adcData>0) {
-        ret_voltage = ret_voltage / ( uint32_t )adcData;
+        adcData = ref_voltage / ( uint32_t )adcData;
+    }
+//    adcData = (adcData*ADC_VREF_BANDGAP) / ADC_MAX_VALUE;
+    return (uint16_t)adcData;
+}
+
+void hal_bsp_adc_release(int pin, int chan) {
+    // noop? or define as ANALOG for lowest power?
+    if (pin>=0 && pin <128) {
+        // but this is already its state... 
+        hal_gpio_deinit(pin);
     }
 
-    return ret_voltage;
 }
-
-void hal_bsp_adc_release(int id, int chan) {
-    // noop? or define as ANALOG for lowest power?
-}
-void hal_bsp_adc_deinit(int adcId) {
-    assert(adcId>=0 && adcId<MAX_ADC);
-    if (_adcs.active[adcId]) {
-        // should use clock relative to adcId TODO
+void hal_bsp_adc_deinit() {
+    if (_adc1.active) {
+        ADC_HandleTypeDef* adch = &_adc1.adcHandle;
+        // Stop ADC
+        __HAL_ADC_DISABLE( adch);
+        // Stop its clock
         __HAL_RCC_ADC1_CLK_DISABLE( );
 
-        // Disable HSI
-        __HAL_RCC_HSI_DISABLE( );
+        // Disable HSI - no, required for system clock
+//        __HAL_RCC_HSI_DISABLE( );
 
-        HAL_ADC_DeInit( &_adcs.adcHandle[adcId] );
-        _adcs.active[adcId] = false;
+        HAL_ADC_DeInit( adch );
+        _adc1.active = false;
     }
 }
 
 #else   /* !ADC */
 
-bool hal_bsp_adc_init(int adcId) {
+bool hal_bsp_adc_init() {
     return false;       // no ADC here
 }
 
-bool hal_bsp_adc_define(int adcId, int pin, int chan) {
+bool hal_bsp_adc_define(int pin, int chan) {
     return false;
 }
 
-int hal_bsp_adc_readmV(int adcId, int channel) {
+int hal_bsp_adc_readmV(int channel) {
     return 0;
 }
 
-void hal_bsp_adc_release(int id, int chan) {
+void hal_bsp_adc_release(int chan) {
 }
-void hal_bsp_adc_deinit(int adcId) {
+void hal_bsp_adc_deinit() {
 }
 #endif  /* ADC */

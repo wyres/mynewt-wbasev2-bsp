@@ -41,8 +41,7 @@ pkg.deps.UART_0:
 pkg.deps.UART_DBG:
     - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
 
+# if using ADC must compile in the stm adc code to get the HAL functions
 pkg.cflags.ADC:
-    -DHAL_ADC_MODULE_ENABLED
-pkg.cflags.BATTERY_CHECK:
     -DHAL_ADC_MODULE_ENABLED
 

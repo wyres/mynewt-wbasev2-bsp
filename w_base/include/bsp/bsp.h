@@ -60,11 +60,11 @@ void BSP_antSwDeInit(int txPin, int rxPin);
 void BSP_antSwTx(int txPin, int rxPin);
 void BSP_antSwRx(int txPin, int rxPin);
 
-bool hal_bsp_adc_init(int id);
-bool hal_bsp_adc_define(int id, int pin, int chan);
-int hal_bsp_adc_readmV(int id, int chan);
-void hal_bsp_adc_release(int id, int chan);
-void hal_bsp_adc_deinit(int id);
+bool hal_bsp_adc_init();
+bool hal_bsp_adc_define(int pin, int chan);
+int hal_bsp_adc_readmV(int chan);
+void hal_bsp_adc_release(int pin, int chan);
+void hal_bsp_adc_deinit();
 
 #ifdef __cplusplus
 }
