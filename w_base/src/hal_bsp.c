@@ -570,6 +570,7 @@ bool hal_bsp_adc_define(int pin, int chan) {
 }
 
 #define ADC_MAX_VALUE                               4095    // 12 bits max value
+// Should read the factory calibrated vref from the eerom at 0x1FF8 00F8/9
 #define ADC_VREF_BANDGAP                            1224    // vRef in mV for ADC
 
 int hal_bsp_adc_readmV(int channel) {
