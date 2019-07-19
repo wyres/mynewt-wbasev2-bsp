@@ -633,7 +633,7 @@ int hal_bsp_adc_readmV(int channel) {
     return 0;
 }
 
-void hal_bsp_adc_release(int chan) {
+void hal_bsp_adc_release(int pin, int chan) {
 }
 void hal_bsp_adc_deinit() {
 }
