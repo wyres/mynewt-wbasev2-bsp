@@ -35,7 +35,7 @@ extern "C" {
 #define UART0_DEV "uart0"
 #define UART1_DEV "uart1"
 #define UART2_DEV "uart2"
-#define UARTDBG_DEV "uartdbg"
+#define UARTDBG_DEV "uartbb0"       // named by uart bitbang code en dur
 
 #define I2C0_DEV "i2c0"         // mynewt bus device name for the I2C1 bus (STM32 numbering)
 #define ALTI_NODE "alt0"        // mynewt bus node name for the altimeter

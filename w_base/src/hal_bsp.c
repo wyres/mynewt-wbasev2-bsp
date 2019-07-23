@@ -338,6 +338,9 @@ hal_bsp_init(void)
 
 // Note I2C0 is I2C1 in STM32 doc
 #if MYNEWT_VAL(I2C_0)
+    rc = hal_bsp_init_i2c();
+    assert(rc ==0);
+    // only init i2c here if using bus driver - else the i2c is init/deinit() on each usage
 #if MYNEWT_VAL(USE_BUS_I2C)
     // Create I2C0 bus driver
     rc = bus_i2c_hal_dev_create(I2C0_DEV, &bus_i2c0, &cfg_i2c0);
@@ -350,9 +353,6 @@ hal_bsp_init(void)
     // Accelero
     rc = bus_i2c_node_create(ACC_NODE, &node_acc,
                     &cfg_acc, &(cfg_acc.node_cfg));
-    assert(rc == 0);
-#else
-    rc = hal_i2c_init(0, &i2c0_cfg);
     assert(rc == 0);
 #endif /* USE_BUS_I2C */
 #endif
@@ -373,7 +373,9 @@ hal_bsp_get_nvic_priority(int irq_num, uint32_t pri)
     /* Add any interrupt priorities configured by the bsp here */
     return pri;
 }
-#if MYNEWT_VAL(I2C_0)
+
+
+#if MYNEWT_VAL(I2C_0) || MYNEWT_VAL(I2C_1) || MYNEWT_VAL(I2C_2)
 #if MYNEWT_VAL(USE_BUS_I2C)
 // need these as STM32 MCU HAL code does NOT define them, and the I2C mynewt driver code requires them
 int hal_i2c_disable(uint8_t n) {
@@ -386,9 +388,39 @@ int hal_i2c_init_hw(uint8_t i2c_num, const struct hal_i2c_hw_settings *cfg) {
     return 0;
 }
 int hal_i2c_config(uint8_t i2c_num, const struct hal_i2c_settings *cfg) {
+    
     return 0;
 }
 #endif /* USE_BUS_I2C */
+// initialise I2C
+int hal_bsp_init_i2c() {
+    int rc = 0;
+#if MYNEWT_VAL(I2C_0)
+    rc = hal_i2c_init(0, &i2c0_cfg);
+#endif
+#if MYNEWT_VAL(I2C_1)
+    rc = hal_i2c_init(1, &i2c1_cfg);
+#endif
+#if MYNEWT_VAL(I2C_2)
+    rc = hal_i2c_init(2, &i2c2_cfg);
+#endif
+    return rc;
+}
+// deinit for power saving
+int hal_bsp_deinit_i2c() {
+    int rc = 0;
+#if MYNEWT_VAL(I2C_0)
+    // no hal fn to deinit currently... TODO
+//    rc = hal_i2c_deinit(0, &i2c0_cfg);
+#endif
+#if MYNEWT_VAL(I2C_1)
+    rc = hal_i2c_deinit(1, &i2c1_cfg);
+#endif
+#if MYNEWT_VAL(I2C_2)
+    rc = hal_i2c_deinit(2, &i2c2_cfg);
+#endif
+    return rc;
+}
 #endif
 
 
