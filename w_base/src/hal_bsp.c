@@ -464,9 +464,7 @@ bool hal_bsp_nvmWrite(uint16_t off, uint8_t len, uint8_t* buf) {
 }
 
 int BSP_getHwVer() {
-    // This is a dynamic value written in the PROM
-    // TODO
-    return 2;       // RevC
+    return MYNEWT_VAL(BSP_HW_REV);      //2;       // RevC
 }
 // BSP specific functions to set the radio antenna switch correctly
 // For W_BASE card, 2 pins are ALWAYS required (revB or revC or later)

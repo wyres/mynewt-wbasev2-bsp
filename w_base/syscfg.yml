@@ -90,6 +90,10 @@ syscfg.defs:
         description: "baud rate for debug (must be less than or equal to 19200)"    
         value: 19200
 
+    BSP_HW_REV:
+        description: "version of base card: 1=revB, 2=revC, 3=revD"
+        value: 2
+        
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
     REBOOT_LOG_FLASH_AREA: FLASH_AREA_REBOOT_LOG
