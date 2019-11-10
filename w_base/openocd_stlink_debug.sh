@@ -30,6 +30,8 @@
 . $CORE_PATH/hw/scripts/openocd.sh
 
 FILE_NAME=$BIN_BASENAME.elf
+mkdir -p $CORE_PATH/../../elfs/
+cp $FILE_NAME $CORE_PATH/../../elfs/currentELF.elf
 CFG="-s $BSP_PATH -f $BSP_PATH/stlink.cfg"
 # Exit openocd when gdb detaches.
 EXTRA_JTAG_CMD="$EXTRA_JTAG_CMD; stm32l1.cpu configure -event gdb-detach {if {[stm32l1.cpu curstate] eq \"halted\"} resume;shutdown}"
