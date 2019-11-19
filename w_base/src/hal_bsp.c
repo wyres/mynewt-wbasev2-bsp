@@ -22,7 +22,9 @@
 
 #include "bsp/bsp.h"
 
-#define PROM_BASE (0x08080000)      // MYNEWT_VAL(PROM_START)
+#define RAM_SIZE    (32 * 1024)         // TODO this should come from bsp.yml
+#define PROM_BASE (0x08080000)      // MYNEWT_VAL(bsp.eeprom_map.EEPROM_AREA.offset)      ?? how to get from bsp.yml
+#define PROM_SIZE   (8*1024)            // TODO this should also come from bsp.yml as .size
 
 #if MYNEWT_VAL(UART_0) || MYNEWT_VAL(UART_DBG)
 #include <uart/uart.h>

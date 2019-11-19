@@ -40,9 +40,6 @@ extern "C" {
 
 extern uint8_t _ram_start;
 
-#define RAM_SIZE    (32 * 1024)
-#define PROM_SIZE   (8*1024)
-
 bool hal_bsp_nvmLock();
 bool hal_bsp_nvmUnlock();
 // Read and write PROM. It is caller's responsibility to nvmUnlock() before access and nvmLock() afterwards

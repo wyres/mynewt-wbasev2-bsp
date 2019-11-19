@@ -22,6 +22,7 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
+  /* these values should be retrived from the definitions in bsp.yml!!! TODO */
   FLASH (rx) :  ORIGIN = 0x0800c000, LENGTH = 168K /* First image slot. */
   RAM (rwx) :   ORIGIN = 0x20000000, LENGTH = 32K
 }

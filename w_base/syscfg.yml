@@ -38,6 +38,7 @@ syscfg.defs:
         description: "using segger with JLINK for debug/load on windows"
         value: 0
 
+    # it would be nicer if this value came from the bsp.yml... Make sure it aligns with there....
     STM32_FLASH_SIZE_KB:
         description: 'Total flash size in KB.'
         value: 256
