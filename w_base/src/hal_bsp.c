@@ -21,8 +21,12 @@
 #include "os/mynewt.h"
 
 #include "bsp/bsp.h"
+#include "sysflash/sysflash.h"
+
 
 #define RAM_SIZE    (32 * 1024)         // TODO this should come from bsp.yml
+//#define PROM_BASE sysflash_map_dflt[EEPROM_AREA].fa_off
+//#define PROM_SIZE sysflash_map_dflt[EEPROM_AREA].fa_size
 #define PROM_BASE (0x08080000)      // MYNEWT_VAL(bsp.eeprom_map.EEPROM_AREA.offset)      ?? how to get from bsp.yml
 #define PROM_SIZE   (8*1024)            // TODO this should also come from bsp.yml as .size
 
