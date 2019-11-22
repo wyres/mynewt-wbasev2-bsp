@@ -81,6 +81,13 @@ bsp.flash_map:
             offset: 0x08008000
             size: 16kB
 
+        FLASH_AREA_MFG:
+            device: 0
+            user_id: 1
+            offset: 0x0
+            size: 196kB
+
+
         # this is PROM but never mind, for the area definition its ok
         EEPROM_AREA:
             user_id: 2
