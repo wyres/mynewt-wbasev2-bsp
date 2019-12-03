@@ -469,8 +469,13 @@ bool hal_bsp_nvmWrite(uint16_t off, uint8_t len, uint8_t* buf) {
     return ret;
 }
 
+// hwrev value is in build, but can be overridden by app code (eg from a config value at boot time)
+static int _hwrev = MYNEWT_VAL(BSP_HW_REV);
 int BSP_getHwVer() {
-    return MYNEWT_VAL(BSP_HW_REV);      //2;       // RevC
+    return _hwrev;
+}
+void BSP_setHwVer(int v) {
+    _hwrev = v;
 }
 // BSP specific functions to set the radio antenna switch correctly
 // For W_BASE card, 2 pins are ALWAYS required (revB or revC or later)
