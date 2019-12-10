@@ -556,6 +556,7 @@ bool hal_bsp_adc_init() {
         adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
         adch->Init.ContinuousConvMode    = DISABLE;
         adch->Init.DiscontinuousConvMode = DISABLE;
+        //ADC_EXTERNALTRIG_T6_TRGO
         adch->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
         adch->Init.ExternalTrigConv      = ADC_SOFTWARE_START;        
         adch->Init.DMAContinuousRequests = DISABLE;
@@ -610,29 +611,23 @@ bool hal_bsp_adc_define(int pin, int chan) {
     return (rc==HAL_OK);
 }
 
-#define ADC_MAX_VALUE                               4095    // 12 bits max value
-// Should read the factory calibrated vref from the eerom at 0x1FF8 00F8/9
-#define ADC_VREF_BANDGAP                            1224    // vRef in mV for ADC
 
-int hal_bsp_adc_readmV(int channel) {
+
+int hal_bsp_adc_read(int channel) {
     ADC_HandleTypeDef* adch = &_adc1.adcHandle;
+    ADC_ChannelConfTypeDef adcConf = { 0 };
     int adcData = 0;
 
-
+    adcConf.Channel = channel;
+    adcConf.Rank = ADC_REGULAR_RANK_1;
+    adcConf.SamplingTime = ADC_SAMPLETIME_192CYCLES;
+    HAL_ADC_ConfigChannel( adch, &adcConf );
     // Start ADC Software Conversion
     HAL_ADC_Start(adch);
 
     HAL_ADC_PollForConversion(adch, HAL_MAX_DELAY);
 
     adcData = HAL_ADC_GetValue(adch);
-
-    int ref_voltage = ( uint32_t )ADC_VREF_BANDGAP * ( uint32_t )ADC_MAX_VALUE;
-    // We don't use the VREF from calibValues here.
-    // calculate the Voltage in millivolt
-    if (adcData>0) {
-        adcData = ref_voltage / ( uint32_t )adcData;
-    }
-//    adcData = (adcData*ADC_VREF_BANDGAP) / ADC_MAX_VALUE;
     return (uint16_t)adcData;
 }
 
