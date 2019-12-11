@@ -38,7 +38,7 @@ pkg.deps:
 
 pkg.deps.UART_0:
     - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
-#no more use for UART_DBG using bitbang in BSP - its enabled by including its package and more independant of BSP
+#no more use for UART_DBG using bitbang in BSP - its enabled by including its package -> independant of BSP
 pkg.deps.UART_DBG:
     - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
 

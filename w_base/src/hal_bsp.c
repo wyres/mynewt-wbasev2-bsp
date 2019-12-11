@@ -99,6 +99,7 @@ static const struct stm32_uart_cfg uart_cfg[UART_CNT] = {
 #endif
 
 // UartDbg is bitbang on a gpio
+/*
 #if MYNEWT_VAL(UART_DBG)
 static struct uart_dev hal_uartdbg;
 static const struct uart_bitbang_conf uartdbg_cfg = {
@@ -107,7 +108,7 @@ static const struct uart_bitbang_conf uartdbg_cfg = {
     .ubc_cputimer_freq = MYNEWT_VAL(OS_CPUTIME_FREQ),
 };
 #endif
-
+*/
 #if MYNEWT_VAL(ADC) 
 /*static struct acd_dev hal_adc_dev;
 static const struct stm32_adc_dev_cfg adc_cfg = {
@@ -282,14 +283,14 @@ hal_bsp_init(void)
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
     assert(rc == 0);
 #endif
-
+/*
 #if MYNEWT_VAL(UART_DBG)
     assert(BSP_UART_DBG_TX!=-1);        // mst define at least tx pin
     rc = os_dev_create((struct os_dev *) &hal_uartdbg, UARTDBG_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_bitbang_init, (void *)&uartdbg_cfg);
     assert(rc == 0);
 #endif
-
+*/
 #if MYNEWT_VAL(TIMER_0)
     hal_timer_init(0, TIM2);
 #endif
