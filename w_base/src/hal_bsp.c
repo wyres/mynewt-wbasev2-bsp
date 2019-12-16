@@ -74,10 +74,11 @@
 #include "mcu/stm32l1xx_mynewt_hal.h"
 #include "mcu/stm32_hal.h"
 #if MYNEWT_VAL(RTC)
-#include "hal/hal_rtc.h"
+#include "stm32l1xx_hal_rtc.h"
 #endif
-
-#include "bsp/bsp.h"
+#if MYNEWT_VAL(BSP_POWER_SETUP)
+#include "wyres-generic/lowpowermgr.h"
+#endif
 
 // Uart0 is UART1 in STM32 doc hence names of HAL defns
 #if MYNEWT_VAL(UART_0)
@@ -178,11 +179,122 @@ struct stm32_hal_spi_cfg spi1_cfg = {
 #endif
 
 #if MYNEWT_VAL(RTC)
-struct stm32_hal_rtc_cfg rtc_cfg = {
-    .hrc_hour_fmt = 24,
-    .hrc_a_prediv = 31,
-    .hrc_s_prediv = 1023
+
+
+// MCU Wake Up Time
+#define MIN_ALARM_DELAY                             3 // in ticks
+
+// sub-second number of bits
+#define N_PREDIV_S                                  10
+
+// Synchronous prediv
+#define PREDIV_S                                    ( ( 1 << N_PREDIV_S ) - 1 )
+
+// Asynchronous prediv
+#define PREDIV_A                                    ( 1 << ( 15 - N_PREDIV_S ) ) - 1
+
+// Sub-second mask definition
+#define ALARM_SUBSECOND_MASK                        ( N_PREDIV_S << RTC_ALRMASSR_MASKSS_Pos )
+
+// RTC Time base in us
+#define USEC_NUMBER                                 1000000
+#define MSEC_NUMBER                                 ( USEC_NUMBER / 1000 )
+
+#define COMMON_FACTOR                               3
+#define CONV_NUMER                                  ( MSEC_NUMBER >> COMMON_FACTOR )
+#define CONV_DENOM                                  ( 1 << ( N_PREDIV_S - COMMON_FACTOR ) )
+
+
+/*!
+ * \brief Days, Hours, Minutes and seconds
+ */
+#define DAYS_IN_LEAP_YEAR                           ( ( uint32_t )  366U )
+#define DAYS_IN_YEAR                                ( ( uint32_t )  365U )
+#define SECONDS_IN_1DAY                             ( ( uint32_t )86400U )
+#define SECONDS_IN_1HOUR                            ( ( uint32_t ) 3600U )
+#define SECONDS_IN_1MINUTE                          ( ( uint32_t )   60U )
+#define MINUTES_IN_1HOUR                            ( ( uint32_t )   60U )
+#define HOURS_IN_1DAY                               ( ( uint32_t )   24U )
+
+/*!
+ * \brief Correction factors
+ */
+#define  DAYS_IN_MONTH_CORRECTION_NORM              ( ( uint32_t )0x99AAA0 )
+#define  DAYS_IN_MONTH_CORRECTION_LEAP              ( ( uint32_t )0x445550 )
+
+/*!
+ * \brief Calculates ceiling( X / N )
+ */
+#define DIVC( X, N )                                ( ( ( X ) + ( N ) -1 ) / ( N ) )
+
+/*!
+ * RTC timer context 
+ */
+typedef struct
+{
+    uint32_t        Time;         // Reference time
+    RTC_TimeTypeDef CalendarTime; // Reference time in calendar format
+    RTC_DateTypeDef CalendarDate; // Reference date in calendar format
+}RtcTimerContext_t;
+
+
+/*!
+ * \brief RTC Handle
+ */
+static RTC_HandleTypeDef RtcHandle = 
+{
+    .Instance = NULL,
+    .Init = 
+    { 
+        .HourFormat = 0,
+        .AsynchPrediv = 0,
+        .SynchPrediv = 0,
+        .OutPut = 0,
+        .OutPutPolarity = 0,
+        .OutPutType = 0
+    },
+    .Lock = HAL_UNLOCKED,
+    .State = HAL_RTC_STATE_RESET
 };
+
+static RTC_DateTypeDef date;
+static RTC_TimeTypeDef time;
+/*!
+ * \brief RTC Alarm
+ */
+//static RTC_AlarmTypeDef RtcAlarm;
+
+/**
+  * @brief  This function handles  WAKE UP TIMER  interrupt request.
+  * @retval None
+  */
+void RTC_WKUP_IRQHandler(void)
+{
+  HAL_RTCEx_WakeUpTimerIRQHandler(&RtcHandle);
+}
+
+/**
+  * @brief  Alarm A callback.
+  * @param  hrtc: pointer to a RTC_HandleTypeDef structure that contains
+  *                the configuration information for RTC.
+  * @retval None
+  */
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
+{
+    hal_gpio_toggle(EXT_IO);
+}
+
+/**
+  * @brief  Wake Up Timer callback.
+  * @param  hrtc: pointer to a RTC_HandleTypeDef structure that contains
+  *                the configuration information for RTC.
+  * @retval None
+  */
+void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
+{
+    hal_gpio_toggle(EXT_IO);
+}
+
 #endif
 
 
@@ -219,14 +331,35 @@ clock_config(void)
     RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
     RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
 
+#ifdef HIGH_SPEED_EXTERNAL_OSCILLATOR_CLOCK
+
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_PWR_VOLTAGESCALING_CONFIG( PWR_REGULATOR_VOLTAGE_SCALE1 );
+
     /* Enable HSI Oscillator and Activate PLL with HSI as source */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.OscillatorType = (RCC_OSCILLATORTYPE_HSE |
+                                        RCC_OSCILLATORTYPE_LSE);
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
     RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
+#else
+
+    /* Enable HSI Oscillator and Activate PLL with HSI as source */
+    RCC_OscInitStruct.OscillatorType = (RCC_OSCILLATORTYPE_HSI|
+                                        RCC_OSCILLATORTYPE_LSE);
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+    RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
+#endif
+
+
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         assert(0);
     }
@@ -274,6 +407,9 @@ hal_bsp_init(void)
     int rc;
 
     (void)rc;
+
+    /* Configure the source of time base considering current system clocks settings*/
+    HAL_InitTick (TICK_INT_PRIORITY);
 
     clock_config();
 
@@ -338,8 +474,93 @@ hal_bsp_init(void)
 #endif
 
 #if MYNEWT_VAL(RTC)
-    rc = hal_rtc_init(&rtc_cfg);
+    HAL_PWR_EnableBkUpAccess();
+
+    __HAL_RCC_RTC_ENABLE( );
+
+    RtcHandle.Instance            = RTC;
+    RtcHandle.Init.HourFormat     = RTC_HOURFORMAT_24;
+    RtcHandle.Init.AsynchPrediv   = PREDIV_A;  // RTC_ASYNCH_PREDIV;
+    RtcHandle.Init.SynchPrediv    = PREDIV_S;  // RTC_SYNCH_PREDIV;
+    RtcHandle.Init.OutPut         = RTC_OUTPUT_DISABLE;
+    RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+    RtcHandle.Init.OutPutType     = RTC_OUTPUT_TYPE_OPENDRAIN;
+    rc = HAL_RTC_Init( &RtcHandle );
+
     assert(rc == 0);
+
+    date.Year                     = 0;
+    date.Month                    = RTC_MONTH_JANUARY;
+    date.Date                     = 1;
+    date.WeekDay                  = RTC_WEEKDAY_MONDAY;
+    HAL_RTC_SetDate( &RtcHandle, &date, RTC_FORMAT_BIN );
+
+    /*at 0:0:0*/
+    time.Hours                    = 0;
+    time.Minutes                  = 0;
+    time.Seconds                  = 0;
+    time.SubSeconds               = 0;
+    time.TimeFormat               = 0;
+    time.StoreOperation           = RTC_STOREOPERATION_RESET;
+    time.DayLightSaving           = RTC_DAYLIGHTSAVING_NONE;
+    HAL_RTC_SetTime( &RtcHandle, &time, RTC_FORMAT_BIN );
+
+    // Init alarm.
+    //HAL_RTC_DeactivateAlarm( &RtcHandle, RTC_ALARM_A );
+
+
+    // Enable Direct Read of the calendar registers (not through Shadow registers)
+    //HAL_RTCEx_EnableBypassShadow( &RtcHandle );
+
+    //HAL_NVIC_SetPriority( RTC_Alarm_IRQn, 1, 0 );
+    //HAL_NVIC_EnableIRQ( RTC_Alarm_IRQn );
+
+    // Init alarm.
+    //HAL_RTC_DeactivateAlarm( &RtcHandle, RTC_ALARM_A );
+
+
+    //setup alarm
+/*
+    RtcAlarm.AlarmTime.Hours            = 0;
+    RtcAlarm.AlarmTime.Minutes          = 0;
+    RtcAlarm.AlarmTime.Seconds          = 0;
+    RtcAlarm.AlarmTime.SubSeconds       = 0;
+    RtcAlarm.AlarmTime.TimeFormat       = RTC_HOURFORMAT12_AM;
+    RtcAlarm.AlarmTime.DayLightSaving   = RTC_DAYLIGHTSAVING_NONE;
+    RtcAlarm.AlarmTime.StoreOperation   = RTC_STOREOPERATION_RESET;
+    RtcAlarm.AlarmMask                  = RTC_ALARMMASK_SECONDS;
+    RtcAlarm.AlarmSubSecondMask         = RTC_ALARMSUBSECONDMASK_ALL;
+    RtcAlarm.AlarmDateWeekDaySel        = RTC_ALARMDATEWEEKDAYSEL_DATE;
+    RtcAlarm.AlarmDateWeekDay           = 1;
+    RtcAlarm.Alarm                      = RTC_ALARM_A;
+
+    HAL_RTC_SetAlarm_IT(&RtcHandle, &RtcAlarm, FORMAT_BIN);
+*/
+    /* Enable and set RTC_WKUP_IRQ */
+ 
+    //HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 6, 0);
+    //HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
+
+    //HAL_NVIC_DisableIRQ(RTC_WKUP_IRQn);
+
+    hal_gpio_deinit(EXT_IO);
+    hal_gpio_init_out(EXT_IO, 0);
+    hal_gpio_write(EXT_IO, 0);
+
+    NVIC_SetPriority(RTC_WKUP_IRQn, (1 << __NVIC_PRIO_BITS) - 1);
+    NVIC_SetVector(RTC_WKUP_IRQn, (uint32_t)RTC_WKUP_IRQHandler);
+    NVIC_EnableIRQ(RTC_WKUP_IRQn);
+
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+
+    rc = HAL_RTCEx_SetWakeUpTimer_IT(&RtcHandle, 1, RTC_WAKEUPCLOCK_CK_SPRE_16BITS);
+
+    assert(rc == 0);
+
+
+
+
+
 #endif
 
 // Note I2C0 is I2C1 in STM32 doc
@@ -674,3 +895,157 @@ void hal_bsp_adc_release(int pin, int chan) {
 void hal_bsp_adc_deinit() {
 }
 #endif  /* ADC */
+
+
+
+#if MYNEWT_VAL(BSP_POWER_SETUP)
+
+// TODO this should be in the OS?
+static LP_HOOK_t _hook_exit_cb=NULL;
+static LP_HOOK_t _hook_enter_cb=NULL;
+
+//Register a backup timer during tickless sleep
+void hal_bsp_power_backup_timer(int os_ticks_per_sec)
+{
+    //MCU_init_alarm(os_ticks_per_sec, reload_val, prio);
+    // TODO : could be replaced by a call to 
+    //  hal_timer_init(...)
+    //  hal_rtc_init(...) ????
+}
+
+//hook idle enter/exit phases. Note the hooks are call with irq disabled in OS critical section - so don't hang about
+void hal_bsp_power_hooks(LP_HOOK_t enter, LP_HOOK_t exit)
+{
+    // Should only have 1 hook of sleeping in the code, so assert if called twice
+    assert(_hook_enter_cb==NULL);
+    _hook_enter_cb = enter;
+    _hook_exit_cb = exit;
+
+}
+
+
+int hal_bsp_power_handler_enter(os_time_t ticks)
+{
+
+
+    // ask to BSP for the appropriate power mode
+    return (_hook_enter_cb!=NULL)?(*_hook_enter_cb)():HAL_BSP_POWER_WFI;
+}
+
+
+int hal_bsp_power_handler_exit(void)
+{
+    //  Upon waking, sync the OS time.
+    // TODO    os_power_sync_time();
+    // and tell hook
+    if (_hook_exit_cb!=NULL) {
+        (*_hook_exit_cb)();
+        return 0;
+    }
+
+    return -1;
+}
+
+#endif
+
+
+
+//BRIAN'S 1st DRAFT
+
+#if 0
+
+
+// TODO : all the code below is not yet operational, essentially coz the linker directives are not in place.
+// ToBeTested
+// in MCU specific code
+static void MCU_init_alarm(uint32_t os_ticks_per_sec, uint32_t reload_val, int prio) {
+#if 0
+    //  Power on the RTC before using.
+    rcc_enable_rtc_clock();
+    rtc_interrupt_disable(RTC_SEC);
+    rtc_interrupt_disable(RTC_ALR);
+    rtc_interrupt_disable(RTC_OW);
+    //  rtc_auto_awake() will not reset the RTC when you press the RST button.
+    //  It will also continue to count while the MCU is held in reset. If
+    //  you want it to reset, use rtc_awake_from_off()
+    rtc_awake_from_off(clock_source);  //  This will enable RTC.
+    rtc_set_prescale_val(prescale);
+
+    //  Set the RTC time only at power on. Don't set it when waking from standby.
+    rtc_set_counter_val(0);              //  Start counting millisecond ticks from 0
+    rtc_set_alarm_time((uint32_t) -1);   //  Reset alarm to -1 or 0xffffffff so we don't trigger now
+    exti_set_trigger(EXTI17, EXTI_TRIGGER_RISING);  //  Enable alarm wakeup via the interrupt
+    exti_enable_request(EXTI17);
+
+    NVIC_SetVector(RTC_IRQn,       (uint32_t) rtc_isr);        //  Set the Interrupt Service Routine for RTC
+    NVIC_SetVector(RTC_Alarm_IRQn, (uint32_t) rtc_alarm_isr);  //  Set the Interrupt Service Routine for RTC Alarm
+    
+    nvic_enable_irq(NVIC_RTC_IRQ);        //  Enable RTC tick interrupt processing
+    nvic_enable_irq(NVIC_RTC_ALARM_IRQ);  //  Enable RTC alarm wakeup interrupt processing
+    __disable_irq();                      //  Disable interrupts while we make changes
+    rtc_clear_flag(RTC_SEC);
+    rtc_clear_flag(RTC_ALR);
+    rtc_clear_flag(RTC_OW);
+    rtc_interrupt_enable(RTC_ALR);        //  Allow RTC to generate alarm interrupts
+    //  rtc_interrupt_enable(RTC_SEC);    //  Not used: Allow RTC to generate tick interrupts
+    __enable_irq();                       //  Enable interrupts
+#endif
+}
+static void MCU_set_alarm(uint32_t millisec) {
+#if 0
+    //  Set alarm for millisec milliseconds from now.
+    volatile uint32_t now = rtc_get_counter_val();
+
+    //  Not documented, but you must disable write protection else the alarm time will not be set and rtc_exit_config_mode() will hang.
+    //  TODO: Disable only if write protection is enabled.
+    pwr_disable_backup_domain_write_protect();
+    rtc_set_alarm_time(now + millisec);
+#endif
+}
+
+static void MCU_sleep(uint32_t timeMS, int hal_power_state) {
+    if (timeMS < 10) { 
+        //  no point in sleeping for <10 milliseconds
+        // busy wait
+        os_time_delay(os_time_ms_to_ticks32(timeMS));
+        return;
+    }
+
+        //  Stop the system timer.  TODO: Start the timer after sleeping.
+    NVIC_DisableIRQ(TIM2_IRQn);
+
+    //  Set the RTC alarm to wake up in `timeMS` milliseconds from now.
+    MCU_set_alarm(timeMS);
+
+    // go into relevant power saving mode, to be woken by the alarm
+    hal_bsp_power_state(hal_power_state);
+}
+
+//  This intercepts all calls to os_tick_init()
+void __wrap_os_tick_init(uint32_t os_ticks_per_sec, int prio)
+{
+    uint32_t reload_val;
+    reload_val = ((uint64_t)SystemCoreClock / os_ticks_per_sec) - 1;
+    //  Init the power management.
+    MCU_init_alarm(os_ticks_per_sec, reload_val, prio);
+}
+
+//  This is what os_tick_idle() should be like ie MCU/BSP independant
+void __wrap_os_tick_idle(os_time_t ticks) {
+    OS_ASSERT_CRITICAL();
+    //  Sleep for the number of ticks.
+    uint32_t timeMS = os_time_ticks_to_ms32(ticks);
+    
+    // The hook tells us sleep type we want, or WFI if no hook
+    int hal_power_state = _hook_enter_cb!=NULL?(*_hook_enter_cb)():HAL_BSP_POWER_WFI;
+    // Do the sleeping - this should BLOCK and return in timeMS 
+    MCU_sleep(timeMS, hal_power_state);
+
+    //  Upon waking, sync the OS time.
+// TODO    os_power_sync_time();
+    // and tell hook
+    if (_hook_exit_cb!=NULL) {
+        (*_hook_exit_cb)();
+    }
+}
+#endif

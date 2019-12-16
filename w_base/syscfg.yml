@@ -65,7 +65,7 @@ syscfg.defs:
 
     RTC:
         description: 'RTC activation'
-        value: 0
+        value: 1
 
     ADC:
         description: "ADC use actived (including battery check)"
@@ -90,6 +90,10 @@ syscfg.defs:
     BSP_HW_REV:
         description: "version of base card: 1=revB, 2=revC, 3=revD"
         value: 2
+
+    BSP_POWER_SETUP:
+        description: "allow or not the general power mode to be handled from mcu and bsp layers"
+        value: 0
         
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
