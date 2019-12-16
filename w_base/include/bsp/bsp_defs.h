@@ -41,6 +41,11 @@ extern "C" {
 #define ALTI_NODE "alt0"        // mynewt bus node name for the altimeter
 #define ACC_NODE "acc0"          // mynewt bus node name for the accelero
 
+/* Our altimetre is a LPS22HB */
+#define ALTI_LPS22HB 1
+/* and the accelero is a LIS2DE12 */
+#define ACC_LIS2DE12 1
+
 // Mappings for generic code modules are in the syscfg
 
 /* GPIO  type pins */
