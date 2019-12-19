@@ -99,7 +99,7 @@ static const struct stm32_uart_cfg uart_cfg[UART_CNT] = {
 };
 #endif
 
-// UartDbg is bitbang on a gpio
+/* UartDbg is bitbang on a gpio - initialised by the bitbang package in sysinit
 #if MYNEWT_VAL(UART_DBG)
 static struct uart_dev hal_uartdbg;
 static const struct uart_bitbang_conf uartdbg_cfg = {
@@ -108,6 +108,7 @@ static const struct uart_bitbang_conf uartdbg_cfg = {
     .ubc_cputimer_freq = MYNEWT_VAL(OS_CPUTIME_FREQ),
 };
 #endif
+*/
 
 #if MYNEWT_VAL(ADC) 
 /*static struct acd_dev hal_adc_dev;
@@ -306,14 +307,14 @@ hal_bsp_init(void)
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
     assert(rc == 0);
 #endif
-
+/* Initialised by bitbang package in sysinit
 #if MYNEWT_VAL(UART_DBG)
     assert(BSP_UART_DBG_TX!=-1);        // mst define at least tx pin
     rc = os_dev_create((struct os_dev *) &hal_uartdbg, UARTDBG_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_bitbang_init, (void *)&uartdbg_cfg);
     assert(rc == 0);
 #endif
-
+*/
 #if MYNEWT_VAL(TIMER_0)
     hal_timer_init(0, TIM2);
 #endif
@@ -514,8 +515,13 @@ bool hal_bsp_nvmWrite(uint16_t off, uint8_t len, uint8_t* buf) {
     return ret;
 }
 
+// hwrev value is in build, but can be overridden by app code (eg from a config value at boot time)
+static int _hwrev = MYNEWT_VAL(BSP_HW_REV);
 int BSP_getHwVer() {
-    return MYNEWT_VAL(BSP_HW_REV);      //2;       // RevC
+    return _hwrev;
+}
+void BSP_setHwVer(int v) {
+    _hwrev = v;
 }
 // BSP specific functions to set the radio antenna switch correctly
 // For W_BASE card, 2 pins are ALWAYS required (revB or revC or later)
@@ -596,6 +602,7 @@ bool hal_bsp_adc_init() {
         adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
         adch->Init.ContinuousConvMode    = DISABLE;
         adch->Init.DiscontinuousConvMode = DISABLE;
+        //ADC_EXTERNALTRIG_T6_TRGO
         adch->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
         adch->Init.ExternalTrigConv      = ADC_SOFTWARE_START;        
         adch->Init.DMAContinuousRequests = DISABLE;
@@ -650,29 +657,23 @@ bool hal_bsp_adc_define(int pin, int chan) {
     return (rc==HAL_OK);
 }
 
-#define ADC_MAX_VALUE                               4095    // 12 bits max value
-// Should read the factory calibrated vref from the eerom at 0x1FF8 00F8/9
-#define ADC_VREF_BANDGAP                            1224    // vRef in mV for ADC
 
-int hal_bsp_adc_readmV(int channel) {
+
+int hal_bsp_adc_read(int channel) {
     ADC_HandleTypeDef* adch = &_adc1.adcHandle;
+    ADC_ChannelConfTypeDef adcConf = { 0 };
     int adcData = 0;
 
-
+    adcConf.Channel = channel;
+    adcConf.Rank = ADC_REGULAR_RANK_1;
+    adcConf.SamplingTime = ADC_SAMPLETIME_192CYCLES;
+    HAL_ADC_ConfigChannel( adch, &adcConf );
     // Start ADC Software Conversion
     HAL_ADC_Start(adch);
 
     HAL_ADC_PollForConversion(adch, HAL_MAX_DELAY);
 
     adcData = HAL_ADC_GetValue(adch);
-
-    int ref_voltage = ( uint32_t )ADC_VREF_BANDGAP * ( uint32_t )ADC_MAX_VALUE;
-    // We don't use the VREF from calibValues here.
-    // calculate the Voltage in millivolt
-    if (adcData>0) {
-        adcData = ref_voltage / ( uint32_t )adcData;
-    }
-//    adcData = (adcData*ADC_VREF_BANDGAP) / ADC_MAX_VALUE;
     return (uint16_t)adcData;
 }
 

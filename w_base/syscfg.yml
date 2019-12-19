@@ -77,12 +77,6 @@ syscfg.defs:
     UART_DBG:
         description: 'UART dedicated for debug logs enabled (uses bitbang on gpio pin)'
         value:  0
-    UART_DBG_TX:
-        description: "gpio pin for debug uart tx - must be set"
-        value: -1
-    UART_DBG_RX:
-        description: "gpio pin for debug uart rx - may be left at -1 to disable RX"
-        value: -1
     UART_DBG_BAUD:
         description: "baud rate for debug (must be less than or equal to 19200)"    
         value: 19200

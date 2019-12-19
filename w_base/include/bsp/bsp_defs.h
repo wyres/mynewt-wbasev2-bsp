@@ -41,6 +41,11 @@ extern "C" {
 #define ALTI_NODE "alt0"        // mynewt bus node name for the altimeter
 #define ACC_NODE "acc0"          // mynewt bus node name for the accelero
 
+/* Our altimetre is a LPS22HB */
+#define ALTI_LPS22HB 1
+/* and the accelero is a LIS2DE12 */
+#define ACC_LIS2DE12 1
+
 // Mappings for generic code modules are in the syscfg
 
 /* GPIO  type pins */
@@ -67,7 +72,9 @@ extern "C" {
 #define ALTIMETER_I2C_ADDR 0x5D
 // accelerometer I2C chan/addr
 #define ACCELERO_I2C_CHAN  0
+// Default I2C addres for ST lis2de12 is 0x18, our board pulls SA0 (which is the LSB) high -> 0x19
 #define ACCELERO_I2C_ADDR  0x19
+
 //#define Microphone IIS config?
 
 // I2C0 is first I2C on STM32 (called I2C1 in pinout doc)

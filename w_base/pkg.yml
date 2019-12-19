@@ -27,6 +27,7 @@ pkg.keywords:
     - stm32l1
     - discovery
 
+# Note we set the L152 define as well, to get ST SPI HAL init code correctly - the differences L151-L152 are not relevant for us
 pkg.cflags: -DSTM32L151xC -DSTM32L152xC
 
 pkg.deps:
@@ -39,7 +40,7 @@ pkg.deps:
 
 pkg.deps.UART_0:
     - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
-#no more use for UART_DBG using bitbang in BSP - its enabled by including its package and more independant of BSP
+#no more use for UART_DBG using bitbang in BSP - its enabled by including its package -> independant of BSP
 pkg.deps.UART_DBG:
     - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
 
