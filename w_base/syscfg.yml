@@ -65,7 +65,7 @@ syscfg.defs:
 
     RTC:
         description: 'RTC activation'
-        value: 1
+        value: 0
 
     ADC:
         description: "ADC use actived (including battery check)"
@@ -104,8 +104,15 @@ syscfg.vals:
     # timer for OS to use by default in the BSP : Timer0
     OS_CPUTIME_TIMER_NUM: 0
 
+    OS_IDLE_TICKLESS_MS_MIN: 1
+
+    OS_CRASH_RESTORE_REGS: 1
+    
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
+
+    # enable (STM32 doc RTC)
+    RTC: 1
 
     # enabled SPI0 (STM32 doc SPI1) as master
     SPI_0_MASTER: 1

@@ -35,14 +35,11 @@ pkg.deps:
     - "@apache-mynewt-core/libc/baselibc"
     - "@apache-mynewt-core/hw/bus/drivers/i2c_common"
     - "@apache-mynewt-core/hw/bus/drivers/i2c_hal"
+    - "@apache-mynewt-core/hw/mcu/stm/stm32_common"
 
 pkg.deps.UART_0:
     - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
 #no more use for UART_DBG using bitbang in BSP - its enabled by including its package and more independant of BSP
 pkg.deps.UART_DBG:
     - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
-
-# if using ADC must compile in the stm adc code to get the HAL functions
-pkg.cflags.ADC:
-    -DHAL_ADC_MODULE_ENABLED
 

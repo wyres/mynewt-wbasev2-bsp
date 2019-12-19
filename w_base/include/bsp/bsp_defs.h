@@ -91,6 +91,9 @@ extern "C" {
 #define BSP_UART_DBG_TX MYNEWT_VAL(UART_DBG_TX)
 #define BSP_UART_DBG_RX MYNEWT_VAL(UART_DBG_RX)
 
+
+#define LSE_VALUE    (32768U)
+
 #ifdef __cplusplus
 }
 #endif

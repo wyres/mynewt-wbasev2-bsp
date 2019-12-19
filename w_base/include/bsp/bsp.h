@@ -68,7 +68,6 @@ void hal_bsp_adc_deinit();
 int hal_bsp_init_i2c();
 int hal_bsp_deinit_i2c();
 
-void hal_bsp_power_backup_timer(int os_ticks_per_sec);
 void hal_bsp_power_hooks(LP_HOOK_t enter, LP_HOOK_t exit);
 int hal_bsp_power_handler_enter(os_time_t ticks);
 int hal_bsp_power_handler_exit(void);
