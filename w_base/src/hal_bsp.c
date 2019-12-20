@@ -218,6 +218,8 @@ clock_config(void)
     RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
     RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
 
+    __disable_irq();
+
 #ifdef HIGH_SPEED_EXTERNAL_OSCILLATOR_CLOCK
 
     __HAL_RCC_PWR_CLK_ENABLE();
@@ -288,6 +290,8 @@ clock_config(void)
         assert(0);
     }
 #endif
+
+    __enable_irq();
 }
 
 void
@@ -298,7 +302,7 @@ hal_bsp_init(void)
     (void)rc;
 
     /* Configure the source of time base considering current system clocks settings*/
-    HAL_InitTick ((1 << __NVIC_PRIO_BITS) - 1);
+    HAL_InitTick(TICK_INT_PRIORITY);
 
     clock_config();
 
