@@ -26,7 +26,6 @@
 #include <os/os_time.h>
 #include "stm32l151xc.h"
 #include "bsp/bsp_defs.h"
-#include "wyres-generic/lowpowermgr.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,9 +70,13 @@ void hal_bsp_adc_deinit();
 int hal_bsp_init_i2c();
 int hal_bsp_deinit_i2c();
 
-void hal_bsp_power_hooks(LP_HOOK_t enter, LP_HOOK_t exit);
-int hal_bsp_power_handler_enter(os_time_t ticks);
-int hal_bsp_power_handler_exit(void);
+/** register sleep hooks up to app */
+typedef int (*LP_HOOK_t)();
+void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit);
+/** functions called from OS (os.c and hal_os_tick.c) */
+int hal_bsp_power_handler_get_mode(os_time_t ticks);
+void hal_bsp_power_handler_sleep_enter(void);
+void hal_bsp_power_handler_sleep_exit(void);
 
 #ifdef __cplusplus
 }

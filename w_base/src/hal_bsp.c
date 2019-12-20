@@ -74,11 +74,16 @@
 #include "mcu/stm32l1xx_mynewt_hal.h"
 #include "mcu/stm32_hal.h"
 #if MYNEWT_VAL(RTC)
+#include "hal/hal_rtc.h"
 #include "stm32l1xx_hal_rtc.h"
+// TODO these should be in a .h!!!
+void hal_rtc_init(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
+void hal_rtc_enable_wakeup(uint32_t time_ms);
+void hal_rtc_disable_wakeup(void);
+
 #endif
-#if MYNEWT_VAL(BSP_POWER_SETUP)
-#include "wyres-generic/lowpowermgr.h"
-#endif
+
+#include "bsp/bsp.h"
 
 // Uart0 is UART1 in STM32 doc hence names of HAL defns
 #if MYNEWT_VAL(UART_0)
@@ -178,10 +183,13 @@ struct stm32_hal_spi_cfg spi1_cfg = {
     .irq_prio = SPI_1_IRQ_PRIO,
 };
 #endif
+
 #if MYNEWT_VAL(RTC)
-void hal_rtc_init(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
-void hal_rtc_enable_wakeup(uint32_t time_ms);
-void hal_rtc_disable_wakeup(void);
+struct stm32_hal_rtc_cfg rtc_cfg = {
+    .hrc_hour_fmt = 24,
+    .hrc_a_prediv = 31,
+    .hrc_s_prediv = 1023
+};
 #endif
 
 
@@ -219,7 +227,6 @@ clock_config(void)
     RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
 
 #ifdef HIGH_SPEED_EXTERNAL_OSCILLATOR_CLOCK
-
     __HAL_RCC_PWR_CLK_ENABLE();
     __HAL_PWR_VOLTAGESCALING_CONFIG( PWR_REGULATOR_VOLTAGE_SCALE1 );
 
@@ -239,7 +246,7 @@ clock_config(void)
                                         RCC_OSCILLATORTYPE_LSE);
     RCC_OscInitStruct.HSIState = RCC_HSI_ON;
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+//    RCC_OscInitStruct.LSEState = RCC_LSE_ON; Causes default_irq()!
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
@@ -278,7 +285,7 @@ clock_config(void)
 
 #if MYNEWT_VAL(RTC)
      __HAL_RCC_RTC_ENABLE( );
-    
+
      PeriphClkInit.PeriphClockSelection |= RCC_PERIPHCLK_RTC;
      PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
 #endif
@@ -297,7 +304,7 @@ hal_bsp_init(void)
 
     (void)rc;
 
-    /* Configure the source of time base considering current system clocks settings*/
+   /* Configure the source of time base considering current system clocks settings*/
     HAL_InitTick ((1 << __NVIC_PRIO_BITS) - 1);
 
     clock_config();
@@ -561,22 +568,6 @@ void BSP_antSwRx(int txPin, int rxPin) {
     }
 }
 
-/**
- * Move the system into the specified power state
- *
- * @param state The power state to move the system into, this is one of
- *                 * HAL_BSP_POWER_ON: Full system on
- *                 * HAL_BSP_POWER_WFI: Processor off, wait for interrupt.
- *                 * HAL_BSP_POWER_SLEEP: Put the system to sleep
- *                 * HAL_BSP_POWER_DEEP_SLEEP: Put the system into deep sleep.
- *                 * HAL_BSP_POWER_OFF: Turn off the system.
- *                 * HAL_BSP_POWER_PERUSER: From this value on, allow user
- *                   defined power states.
- *
- * @return 0 on success, non-zero if system cannot move into this power state.
- */
-//int hal_bsp_power_state(int state);
-
 #if MYNEWT_VAL(ADC) 
 // Initialise an adc for basic gpio like use
 static struct {
@@ -602,7 +593,6 @@ bool hal_bsp_adc_init() {
         adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
         adch->Init.ContinuousConvMode    = DISABLE;
         adch->Init.DiscontinuousConvMode = DISABLE;
-        //ADC_EXTERNALTRIG_T6_TRGO
         adch->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
         adch->Init.ExternalTrigConv      = ADC_SOFTWARE_START;        
         adch->Init.DMAContinuousRequests = DISABLE;
@@ -711,7 +701,7 @@ bool hal_bsp_adc_define(int pin, int chan) {
     return false;
 }
 
-int hal_bsp_adc_readmV(int channel) {
+int hal_bsp_adc_read(int channel) {
     return 0;
 }
 
@@ -722,43 +712,55 @@ void hal_bsp_adc_deinit() {
 #endif  /* ADC */
 
 
-
 #if MYNEWT_VAL(BSP_POWER_SETUP)
 
-// TODO this should be in the OS?
+static LP_HOOK_t _hook_get_mode_cb=NULL;
 static LP_HOOK_t _hook_exit_cb=NULL;
 static LP_HOOK_t _hook_enter_cb=NULL;
 
-//hook idle enter/exit phases. Note the hooks are call with irq disabled in OS critical section - so don't hang about
-void hal_bsp_power_hooks(LP_HOOK_t enter, LP_HOOK_t exit)
+/* hook idle enter/exit phases. 
+ * Note the get_mode call is made with irq disabled in OS critical section - so don't hang about
+ * enter/exit are called outside of the critical region
+ * */
+void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit)
 {
     // Should only have 1 hook of sleeping in the code, so assert if called twice
     assert(_hook_enter_cb==NULL);
+    _hook_get_mode_cb = getMode;
     _hook_enter_cb = enter;
     _hook_exit_cb = exit;
 }
 
-
-int hal_bsp_power_handler_enter(os_time_t ticks)
+/* the 2 following functions are called from hal_os_tick.c iff BSP_POWER_SETUP is set */
+/* get the required power sleep mode that the application wants to be in */
+int hal_bsp_power_handler_get_mode(os_time_t ticks)
 {
     // ask to BSP for the appropriate power mode
-    return (_hook_enter_cb!=NULL)?(*_hook_enter_cb)():HAL_BSP_POWER_WFI;
+    return (_hook_get_mode_cb!=NULL)?(*_hook_get_mode_cb)():HAL_BSP_POWER_WFI;
 }
 
-
-int hal_bsp_power_handler_exit(void)
+/* enter sleep - called before entering critical region */
+void hal_bsp_power_handler_sleep_enter()
 {
-    //  Upon waking, sync the OS time.
-    // TODO    os_power_sync_time();
-    // and tell hook
+    if (_hook_enter_cb!=NULL) {
+        (*_hook_enter_cb)();
+    }
+}
+
+/* exit sleep - called after exiting critical region */
+void hal_bsp_power_handler_sleep_exit(void)
+{
+    /* and tell hook */
     if (_hook_exit_cb!=NULL) {
         (*_hook_exit_cb)();
-        return 0;
     }
-
-    return -1;
+}
+#else 
+void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit) {
+    // noop
+    (void)getMode;
+    (void)enter;
+    (void)exit;
 }
 
 #endif
-
-
