@@ -411,8 +411,9 @@ hal_bsp_init(void)
         .DayLightSaving           = RTC_DAYLIGHTSAVING_NONE,
     };
 
-    hal_rtc_init(&date, &time);
-    
+// not in standard mynewt kernal!! commented out until final RTC code is tested
+//     hal_rtc_init(&date, &time);
+
     //hal_rtc_enable_wakeup(200);
 #endif
 }
