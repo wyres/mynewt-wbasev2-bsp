@@ -75,6 +75,12 @@
 #include "mcu/stm32_hal.h"
 #if MYNEWT_VAL(RTC)
 #include "hal/hal_rtc.h"
+#include "stm32l1xx_hal_rtc.h"
+// TODO these should be in a .h!!!
+void hal_rtc_init(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
+void hal_rtc_enable_wakeup(uint32_t time_ms);
+void hal_rtc_disable_wakeup(void);
+
 #endif
 
 #include "bsp/bsp.h"
@@ -98,7 +104,7 @@ static const struct stm32_uart_cfg uart_cfg[UART_CNT] = {
 };
 #endif
 
-// UartDbg is bitbang on a gpio
+/* UartDbg is bitbang on a gpio - initialised by the bitbang package in sysinit
 #if MYNEWT_VAL(UART_DBG)
 static struct uart_dev hal_uartdbg;
 static const struct uart_bitbang_conf uartdbg_cfg = {
@@ -107,6 +113,7 @@ static const struct uart_bitbang_conf uartdbg_cfg = {
     .ubc_cputimer_freq = MYNEWT_VAL(OS_CPUTIME_FREQ),
 };
 #endif
+*/
 
 #if MYNEWT_VAL(ADC) 
 /*static struct acd_dev hal_adc_dev;
@@ -219,14 +226,34 @@ clock_config(void)
     RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
     RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
 
+#ifdef HIGH_SPEED_EXTERNAL_OSCILLATOR_CLOCK
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_PWR_VOLTAGESCALING_CONFIG( PWR_REGULATOR_VOLTAGE_SCALE1 );
+
     /* Enable HSI Oscillator and Activate PLL with HSI as source */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.OscillatorType = (RCC_OSCILLATORTYPE_HSE |
+                                        RCC_OSCILLATORTYPE_LSE);
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
     RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
+#else
+
+    /* Enable HSI Oscillator and Activate PLL with HSI as source */
+    RCC_OscInitStruct.OscillatorType = (RCC_OSCILLATORTYPE_HSI|
+                                        RCC_OSCILLATORTYPE_LSE);
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+//    RCC_OscInitStruct.LSEState = RCC_LSE_ON; Causes default_irq()!
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+    RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
+#endif
+
+
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         assert(0);
     }
@@ -257,6 +284,8 @@ clock_config(void)
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 #if MYNEWT_VAL(RTC)
+     __HAL_RCC_RTC_ENABLE( );
+
      PeriphClkInit.PeriphClockSelection |= RCC_PERIPHCLK_RTC;
      PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
 #endif
@@ -275,23 +304,24 @@ hal_bsp_init(void)
 
     (void)rc;
 
+   /* Configure the source of time base considering current system clocks settings*/
+    HAL_InitTick ((1 << __NVIC_PRIO_BITS) - 1);
+
     clock_config();
 
 #if MYNEWT_VAL(UART_0)
     rc = os_dev_create((struct os_dev *) &hal_uart0, UART0_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
-    
-
     assert(rc == 0);
 #endif
-
+/* Initialised by bitbang package in sysinit
 #if MYNEWT_VAL(UART_DBG)
     assert(BSP_UART_DBG_TX!=-1);        // mst define at least tx pin
     rc = os_dev_create((struct os_dev *) &hal_uartdbg, UARTDBG_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_bitbang_init, (void *)&uartdbg_cfg);
     assert(rc == 0);
 #endif
-
+*/
 #if MYNEWT_VAL(TIMER_0)
     hal_timer_init(0, TIM2);
 #endif
@@ -311,7 +341,7 @@ hal_bsp_init(void)
 
 #if MYNEWT_VAL(ADC)
 /*  device for adc not yet possible as only STM32F4 driver  
-    rc = os_dev_create((struct os_dev *) &hal_adc, V3_ADC_DEV,
+    rc = os_dev_create((struct os_dev *) &hal_adc, ADC_DEV,
       OS_DEV_INIT_PRIMARY, 0, adc_hal_init, (void *)&adc_cfg);
     assert(rc == 0);
     */
@@ -339,10 +369,6 @@ hal_bsp_init(void)
     assert(rc == 0);
 #endif
 
-#if MYNEWT_VAL(RTC)
-    rc = hal_rtc_init(&rtc_cfg);
-    assert(rc == 0);
-#endif
 
 // Note I2C0 is I2C1 in STM32 doc
 #if MYNEWT_VAL(I2C_0)
@@ -363,6 +389,32 @@ hal_bsp_init(void)
                     &cfg_acc, &(cfg_acc.node_cfg));
     assert(rc == 0);
 #endif /* USE_BUS_I2C */
+#endif
+
+#if MYNEWT_VAL(RTC)
+    RTC_DateTypeDef date =
+    {
+        .Year                     = 0,
+        .Month                    = RTC_MONTH_JANUARY,
+        .Date                     = 1,
+        .WeekDay                  = RTC_WEEKDAY_MONDAY,
+    };
+
+    RTC_TimeTypeDef time =
+    {
+        .Hours                    = 0,
+        .Minutes                  = 0,
+        .Seconds                  = 0,
+        .SubSeconds               = 0,
+        .TimeFormat               = 0,
+        .StoreOperation           = RTC_STOREOPERATION_RESET,
+        .DayLightSaving           = RTC_DAYLIGHTSAVING_NONE,
+    };
+
+// not in standard mynewt kernal!! commented out until final RTC code is tested
+//     hal_rtc_init(&date, &time);
+
+    //hal_rtc_enable_wakeup(200);
 #endif
 }
 
@@ -474,7 +526,6 @@ bool hal_bsp_nvmWrite(uint16_t off, uint8_t len, uint8_t* buf) {
 // hwrev value is in build, but can be overridden by app code (eg from a config value at boot time)
 static int _hwrev = MYNEWT_VAL(BSP_HW_REV);
 int BSP_getHwVer() {
-    
     return _hwrev;
 }
 void BSP_setHwVer(int v) {
@@ -517,22 +568,6 @@ void BSP_antSwRx(int txPin, int rxPin) {
 
     }
 }
-
-/**
- * Move the system into the specified power state
- *
- * @param state The power state to move the system into, this is one of
- *                 * HAL_BSP_POWER_ON: Full system on
- *                 * HAL_BSP_POWER_WFI: Processor off, wait for interrupt.
- *                 * HAL_BSP_POWER_SLEEP: Put the system to sleep
- *                 * HAL_BSP_POWER_DEEP_SLEEP: Put the system into deep sleep.
- *                 * HAL_BSP_POWER_OFF: Turn off the system.
- *                 * HAL_BSP_POWER_PERUSER: From this value on, allow user
- *                   defined power states.
- *
- * @return 0 on success, non-zero if system cannot move into this power state.
- */
-//int hal_bsp_power_state(int state);
 
 #if MYNEWT_VAL(ADC) 
 // Initialise an adc for basic gpio like use
@@ -613,29 +648,23 @@ bool hal_bsp_adc_define(int pin, int chan) {
     return (rc==HAL_OK);
 }
 
-#define ADC_MAX_VALUE                               4095    // 12 bits max value
-// Should read the factory calibrated vref from the eerom at 0x1FF8 00F8/9
-#define ADC_VREF_BANDGAP                            1224    // vRef in mV for ADC
 
-int hal_bsp_adc_readmV(int channel) {
+
+int hal_bsp_adc_read(int channel) {
     ADC_HandleTypeDef* adch = &_adc1.adcHandle;
+    ADC_ChannelConfTypeDef adcConf = { 0 };
     int adcData = 0;
 
-
+    adcConf.Channel = channel;
+    adcConf.Rank = ADC_REGULAR_RANK_1;
+    adcConf.SamplingTime = ADC_SAMPLETIME_192CYCLES;
+    HAL_ADC_ConfigChannel( adch, &adcConf );
     // Start ADC Software Conversion
     HAL_ADC_Start(adch);
 
     HAL_ADC_PollForConversion(adch, HAL_MAX_DELAY);
 
     adcData = HAL_ADC_GetValue(adch);
-
-    int ref_voltage = ( uint32_t )ADC_VREF_BANDGAP * ( uint32_t )ADC_MAX_VALUE;
-    // We don't use the VREF from calibValues here.
-    // calculate the Voltage in millivolt
-    if (adcData>0) {
-        adcData = ref_voltage / ( uint32_t )adcData;
-    }
-//    adcData = (adcData*ADC_VREF_BANDGAP) / ADC_MAX_VALUE;
     return (uint16_t)adcData;
 }
 
@@ -673,7 +702,7 @@ bool hal_bsp_adc_define(int pin, int chan) {
     return false;
 }
 
-int hal_bsp_adc_readmV(int channel) {
+int hal_bsp_adc_read(int channel) {
     return 0;
 }
 
@@ -682,3 +711,57 @@ void hal_bsp_adc_release(int pin, int chan) {
 void hal_bsp_adc_deinit() {
 }
 #endif  /* ADC */
+
+
+#if MYNEWT_VAL(BSP_POWER_SETUP)
+
+static LP_HOOK_t _hook_get_mode_cb=NULL;
+static LP_HOOK_t _hook_exit_cb=NULL;
+static LP_HOOK_t _hook_enter_cb=NULL;
+
+/* hook idle enter/exit phases. 
+ * Note the get_mode call is made with irq disabled in OS critical section - so don't hang about
+ * enter/exit are called outside of the critical region
+ * */
+void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit)
+{
+    // Should only have 1 hook of sleeping in the code, so assert if called twice
+    assert(_hook_enter_cb==NULL);
+    _hook_get_mode_cb = getMode;
+    _hook_enter_cb = enter;
+    _hook_exit_cb = exit;
+}
+
+/* the 2 following functions are called from hal_os_tick.c iff BSP_POWER_SETUP is set */
+/* get the required power sleep mode that the application wants to be in */
+int hal_bsp_power_handler_get_mode(os_time_t ticks)
+{
+    // ask to BSP for the appropriate power mode
+    return (_hook_get_mode_cb!=NULL)?(*_hook_get_mode_cb)():HAL_BSP_POWER_WFI;
+}
+
+/* enter sleep - called before entering critical region */
+void hal_bsp_power_handler_sleep_enter()
+{
+    if (_hook_enter_cb!=NULL) {
+        (*_hook_enter_cb)();
+    }
+}
+
+/* exit sleep - called after exiting critical region */
+void hal_bsp_power_handler_sleep_exit(void)
+{
+    /* and tell hook */
+    if (_hook_exit_cb!=NULL) {
+        (*_hook_exit_cb)();
+    }
+}
+#else 
+void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit) {
+    // noop
+    (void)getMode;
+    (void)enter;
+    (void)exit;
+}
+
+#endif

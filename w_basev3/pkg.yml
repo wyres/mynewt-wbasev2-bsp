@@ -35,6 +35,7 @@ pkg.deps:
     - "@apache-mynewt-core/libc/baselibc"
     - "@apache-mynewt-core/hw/bus/drivers/i2c_common"
     - "@apache-mynewt-core/hw/bus/drivers/i2c_hal"
+    - "@apache-mynewt-core/hw/mcu/stm/stm32_common"
 
 pkg.deps.UART_0:
     - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
@@ -42,7 +43,4 @@ pkg.deps.UART_0:
 pkg.deps.UART_DBG:
     - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
 
-# if using ADC must compile in the stm adc code to get the HAL functions
-pkg.cflags.ADC:
-    -DHAL_ADC_MODULE_ENABLED
 

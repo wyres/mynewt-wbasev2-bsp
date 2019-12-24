@@ -49,7 +49,7 @@
   * @brief This is the list of modules to be used in the HAL driver 
   */
 #define HAL_MODULE_ENABLED
-/* #define HAL_ADC_MODULE_ENABLED */
+#define HAL_ADC_MODULE_ENABLED
 /* #define HAL_COMP_MODULE_ENABLED */
 #define HAL_CORTEX_MODULE_ENABLED
 /* #define HAL_CRC_MODULE_ENABLED */
@@ -68,7 +68,8 @@
 /* #define HAL_PCD_MODULE_ENABLED */
 #define HAL_PWR_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
-/* #define HAL_RTC_MODULE_ENABLED */
+#define HAL_RTC_MODULE_ENABLED 
+
 /* #define HAL_SD_MODULE_ENABLED */
 /* #define HAL_SMARTCARD_MODULE_ENABLED */
 #define HAL_SPI_MODULE_ENABLED

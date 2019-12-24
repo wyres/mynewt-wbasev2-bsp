@@ -77,12 +77,6 @@ syscfg.defs:
     UART_DBG:
         description: 'UART dedicated for debug logs enabled (uses bitbang on gpio pin)'
         value:  0
-    UART_DBG_TX:
-        description: "gpio pin for debug uart tx - must be set"
-        value: -1
-    UART_DBG_RX:
-        description: "gpio pin for debug uart rx - may be left at -1 to disable RX"
-        value: -1
     UART_DBG_BAUD:
         description: "baud rate for debug (must be less than or equal to 19200)"    
         value: 19200
@@ -90,6 +84,14 @@ syscfg.defs:
     BSP_HW_REV:
         description: "version of base card: 1=revB, 2=revC, 3=revD"
         value: 3
+
+    BSP_POWER_SETUP:
+        description: "allow or not the general power mode to be handled from mcu and bsp layers"
+        value: 0
+
+    OS_TICKLESS_RTC:
+        description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
+        value: 0
         
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
@@ -100,8 +102,17 @@ syscfg.vals:
     # timer for OS to use by default in the BSP : Timer0
     OS_CPUTIME_TIMER_NUM: 0
 
+    # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
+    OS_IDLE_TICKLESS_MS_MIN: 10
+    OS_IDLE_TICKLESS_MS_MAX: 600000
+
+    OS_CRASH_RESTORE_REGS: 1
+    
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
+
+    # enable (STM32 doc RTC)
+    RTC: 0
 
     # enabled SPI0 (STM32 doc SPI1) as master
     SPI_0_MASTER: 1
