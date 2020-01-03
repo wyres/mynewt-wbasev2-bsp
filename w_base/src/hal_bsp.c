@@ -74,7 +74,7 @@
 #include "mcu/stm32l1xx_mynewt_hal.h"
 #include "mcu/stm32_hal.h"
 #if MYNEWT_VAL(RTC)
-#include "hal/hal_rtc.h"
+//#include "hal/hal_rtc.h"
 #include "stm32l1xx_hal_rtc.h"
 // TODO these should be in a .h!!!
 void hal_rtc_init(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
@@ -231,7 +231,9 @@ clock_config(void)
     RCC_OscInitStruct.OscillatorType = (RCC_OSCILLATORTYPE_HSE |
                                         RCC_OSCILLATORTYPE_LSE);
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+#if MYNEWT_VAL(RTC)    
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON; //Causes default_irq()!
+#endif
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
@@ -243,7 +245,9 @@ clock_config(void)
                                         RCC_OSCILLATORTYPE_LSE);
     RCC_OscInitStruct.HSIState = RCC_HSI_ON;
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-//    RCC_OscInitStruct.LSEState = RCC_LSE_ON; Causes default_irq()!
+#if MYNEWT_VAL(RTC)    
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON; //Causes default_irq()!
+#endif
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
@@ -296,6 +300,16 @@ clock_config(void)
     __enable_irq();
 }
 
+#if MYNEWT_VAL(TIMER_1)
+static struct hal_timer SysTickTestTimer;
+static void
+timer_test_handler(void *unused)
+{
+  hal_gpio_toggle(EXT_IO);
+};
+#endif
+
+
 void
 hal_bsp_init(void)
 {
@@ -304,7 +318,7 @@ hal_bsp_init(void)
     (void)rc;
 
    /* Configure the source of time base considering current system clocks settings*/
-    HAL_InitTick(TICK_INT_PRIORITY);
+    HAL_InitTick(6);
 
     clock_config();
 
@@ -326,7 +340,18 @@ hal_bsp_init(void)
 #endif
 
 #if MYNEWT_VAL(TIMER_1)
-    hal_timer_init(1, TIM3);
+    
+    hal_gpio_deinit(EXT_IO);
+    hal_gpio_init_out(EXT_IO, 0);
+    
+    rc = hal_timer_init(1, TIM3);
+    assert(rc == 0);
+   
+    rc = hal_timer_set_cb(1, &SysTickTestTimer, timer_test_handler, NULL);
+    assert(rc == 0);
+    rc = hal_timer_config(1, 1000);
+    assert(rc == 0);
+    
 #endif
 
 #if MYNEWT_VAL(TIMER_2)
@@ -391,6 +416,7 @@ hal_bsp_init(void)
 #endif
 
 #if MYNEWT_VAL(RTC)
+
     RTC_DateTypeDef date =
     {
         .Year                     = 0,
@@ -410,11 +436,14 @@ hal_bsp_init(void)
         .DayLightSaving           = RTC_DAYLIGHTSAVING_NONE,
     };
 
-// not in standard mynewt kernal!! commented out until final RTC code is tested
-//     hal_rtc_init(&date, &time);
+    // not in standard mynewt kernal!! commented out until final RTC code is tested
+    hal_rtc_init(&date, &time);
 
-    //hal_rtc_enable_wakeup(200);
+    hal_rtc_enable_wakeup(300);
+
 #endif
+
+
 }
 
 /**

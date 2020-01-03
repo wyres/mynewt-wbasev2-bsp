@@ -53,7 +53,7 @@ syscfg.defs:
 
     TIMER_1:
         description: 'Timer 1'
-        value:  0
+        value:  1
 
     TIMER_2:
         description: 'Timer 2'
@@ -93,6 +93,15 @@ syscfg.defs:
         description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
         value: 0
 
+    SYSTICK_TIMER_ENABLE:
+        description: "use timer instead of systick peripheral"
+        value: 0
+
+    SYSTICK_TIMER:
+        description: "use timer instead of systick peripheral"
+        value: 4
+    
+
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
     REBOOT_LOG_FLASH_AREA: FLASH_AREA_REBOOT_LOG
@@ -106,7 +115,7 @@ syscfg.vals:
     OS_IDLE_TICKLESS_MS_MIN: 10
     OS_IDLE_TICKLESS_MS_MAX: 600000
 
-    OS_CRASH_RESTORE_REGS: 1
+    OS_CRASH_RESTORE_REGS: 0
     
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
