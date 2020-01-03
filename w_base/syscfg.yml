@@ -53,7 +53,7 @@ syscfg.defs:
 
     TIMER_1:
         description: 'Timer 1'
-        value:  1
+        value:  0
 
     TIMER_2:
         description: 'Timer 2'
@@ -91,16 +91,7 @@ syscfg.defs:
 
     OS_TICKLESS_RTC:
         description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
-        value: 0
-
-    SYSTICK_TIMER_ENABLE:
-        description: "use timer instead of systick peripheral"
-        value: 0
-
-    SYSTICK_TIMER:
-        description: "use timer instead of systick peripheral"
-        value: 4
-    
+        value: 0   
 
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:

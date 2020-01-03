@@ -300,15 +300,6 @@ clock_config(void)
     __enable_irq();
 }
 
-#if MYNEWT_VAL(TIMER_1)
-static struct hal_timer SysTickTestTimer;
-static void
-timer_test_handler(void *unused)
-{
-  hal_gpio_toggle(EXT_IO);
-};
-#endif
-
 
 void
 hal_bsp_init(void)
@@ -318,8 +309,9 @@ hal_bsp_init(void)
     (void)rc;
 
    /* Configure the source of time base considering current system clocks settings*/
-    HAL_InitTick(6);
-
+#if MYNEWT_VAL(RTC)   
+    HAL_InitTick(14);
+#endif
     clock_config();
 
 #if MYNEWT_VAL(UART_0)
@@ -339,19 +331,8 @@ hal_bsp_init(void)
     hal_timer_init(0, TIM2);
 #endif
 
-#if MYNEWT_VAL(TIMER_1)
-    
-    hal_gpio_deinit(EXT_IO);
-    hal_gpio_init_out(EXT_IO, 0);
-    
-    rc = hal_timer_init(1, TIM3);
-    assert(rc == 0);
-   
-    rc = hal_timer_set_cb(1, &SysTickTestTimer, timer_test_handler, NULL);
-    assert(rc == 0);
-    rc = hal_timer_config(1, 1000);
-    assert(rc == 0);
-    
+#if MYNEWT_VAL(TIMER_1)    
+    hal_timer_init(1, TIM3);
 #endif
 
 #if MYNEWT_VAL(TIMER_2)
@@ -439,7 +420,7 @@ hal_bsp_init(void)
     // not in standard mynewt kernal!! commented out until final RTC code is tested
     hal_rtc_init(&date, &time);
 
-    hal_rtc_enable_wakeup(300);
+    //hal_rtc_enable_wakeup(300);
 
 #endif
 
