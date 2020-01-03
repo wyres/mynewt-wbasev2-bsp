@@ -1,0 +1,96 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+bsp.arch: cortex_m3
+bsp.compiler: '@apache-mynewt-core/compiler/arm-none-eabi-m3'
+bsp.linkerscript:
+    - "w_base/app-stm32l152.ld"
+    - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx/stm32l152.ld"
+    - "w_base/app-dmz-stm32l15x.ld"
+
+bsp.linkerscript.BOOT_LOADER.OVERWRITE:
+    - "w_base/boot-stm32l152.ld"
+    - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx/stm32l152.ld"
+
+bsp.downloadscript: "nosuchscript/overrideintargetsyscfg.yml"
+bsp.debugscript: "nosuchscript/overrideintargetsyscfg.yml"
+
+bsp.downloadscript.SEGGER_JLINK: "w_base/jlink_download.sh"
+bsp.debugscript.SEGGER_JLINK: "w_base/jlink_debug.sh"
+bsp.downloadscript.SEGGER_JLINK_WINDOWS.OVERWRITE: "w_base/jlink_download.cmd"
+bsp.debugscript.SEGGER_JLINK_WINDOWS.OVERWRITE: "w_base/jlink_debug.cmd"
+
+bsp.downloadscript.OPENOCD_JLINK: "w_base/openocd_jlink_download.sh"
+bsp.debugscript.OPENOCD_JLINK: "w_base/openocd_jlink_debug.sh"
+bsp.downloadscript.OPENOCD_JLINK_WINDOWS.OVERWRITE: "w_base/openocd_jlink_download.cmd"
+bsp.debugscript.OPENOCD_JLINK_WINDOWS.OVERWRITE: "w_base/openocd_jlink_debug.cmd"
+
+bsp.downloadscript.OPENOCD_STLINK: "w_base/openocd_stlink_download.sh"
+bsp.debugscript.OPENOCD_STLINK: "w_base/openocd_stlink_debug.sh"
+bsp.downloadscript.OPENOCD_STLINK_WINDOWS.OVERWRITE: "w_base/openocd_stlink_download.cmd"
+bsp.debugscript.OPENOCD_STLINK_WINDOWS.OVERWRITE: "w_base/openocd_stlink_debug.cmd"
+
+bsp.downloadscript.WINDOWS.OVERWRITE: "w_base/openocd_stlink_download.cmd"
+bsp.debugscript.WINDOWS.OVERWRITE: "w_base/openocd_stlink_debug.cmd"
+
+bsp.flash_map:
+    areas:
+        # System areas.
+        FLASH_AREA_BOOTLOADER:
+            device: 0
+            offset: 0x08000000
+            size: 28kB
+        FLASH_AREA_IMAGE_0:
+            device: 0
+            offset: 0x0800c000
+            size: 168kB
+        FLASH_AREA_IMAGE_1:
+            device: 0
+            offset: 0x08036000
+            size: 32kB
+        FLASH_AREA_IMAGE_SCRATCH:
+            device: 0
+            offset: 0x0803e000
+            size: 8kB
+
+        # User areas.
+        FLASH_AREA_REBOOT_LOG:
+            user_id: 0
+            device: 0
+            offset: 0x08007000
+            size: 4kB
+        FLASH_AREA_NFFS:
+            user_id: 1
+            device: 0
+            offset: 0x08008000
+            size: 16kB
+
+        # this is PROM but never mind, for the area definition its ok
+        EEPROM_AREA:
+            user_id: 2
+            device: 0
+            offset: 0x08080000
+            size: 8kb
+
+        # This area is used by the manufacturing generation process to allow the creation of the image with bootloader AND app.
+        FLASH_AREA_MFG:
+            device: 0
+            user_id: 3
+            offset: 0x0
+            size: 196kB
