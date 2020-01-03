@@ -1,0 +1,156 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+# 
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+syscfg.defs:
+
+    OPENOCD_STLINK:
+        description: "using openOCD with STLINK for debug/load"
+        value: 0
+    OPENOCD_STLINK_WINDOWS:
+        description: "using openOCD with STLINK for debug/load on windows"
+        value: 0
+    OPENOCD_JLINK:
+        description: "using openOCD with JLINK for debug/load"
+        value: 0
+    OPENOCD_JLINK_WINDOWS:
+        description: "using openOCD with JLINK for debug/load on windows"
+        value: 0
+    SEGGER_JLINK:
+        description: "using segger with JLINK for debug/load"
+        value: 0
+    SEGGER_JLINK_WINDOWS:
+        description: "using segger with JLINK for debug/load on windows"
+        value: 0
+
+    # it would be nicer if this value came from the bsp.yml... Make sure it aligns with there....
+    STM32_FLASH_SIZE_KB:
+        description: 'Total flash size in KB.'
+        value: 256
+
+    UART_0:
+        description: 'UART 0 (STM32 uart1) enabled'
+        value:  1
+
+    TIMER_0:
+        description: 'Timer 0 (timer2 in STM in fact, used by OS)'
+        value:  1
+
+    TIMER_1:
+        description: 'Timer 1'
+        value:  0
+
+    TIMER_2:
+        description: 'Timer 2'
+        value:  0
+
+    USE_BUS_I2C:
+        description: "use bus driver type access for I2C or hal?"
+        value: 0
+
+    RTC:
+        description: 'RTC activation'
+        value: 0
+
+    ADC:
+        description: "ADC use actived (including battery check)"
+        value: 0
+    ADC_DEV:
+        description: "name of adc mynewt device : currently not used as no mynewt driver for adc for STM32L1"
+        value: 'ADC'
+        
+    UART_DBG:
+        description: 'UART dedicated for debug logs enabled (uses bitbang on gpio pin)'
+        value:  0
+    UART_DBG_BAUD:
+        description: "baud rate for debug (must be less than or equal to 19200)"    
+        value: 19200
+
+    BSP_HW_REV:
+        description: "version of base card: 1=revB, 2=revC, 3=revD"
+        value: 3
+
+    BSP_POWER_SETUP:
+        description: "allow or not the general power mode to be handled from mcu and bsp layers"
+        value: 0
+
+    OS_TICKLESS_RTC:
+        description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
+        value: 0
+        
+    # overwrite/set module required card specific hardware mappings
+syscfg.vals:
+    REBOOT_LOG_FLASH_AREA: FLASH_AREA_REBOOT_LOG
+    CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
+    NFFS_FLASH_AREA: FLASH_AREA_NFFS
+    COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
+    # timer for OS to use by default in the BSP : Timer0
+    OS_CPUTIME_TIMER_NUM: 0
+
+    # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
+    OS_IDLE_TICKLESS_MS_MIN: 10
+    OS_IDLE_TICKLESS_MS_MAX: 600000
+
+    OS_CRASH_RESTORE_REGS: 1
+    
+    # enable I2C0 (STM32 doc I2C1)
+    I2C_0: 1
+
+    # enable (STM32 doc RTC)
+    RTC: 0
+
+    # enabled SPI0 (STM32 doc SPI1) as master
+    SPI_0_MASTER: 1
+    SPI_1_MASTER: 0
+
+    # W_BASE v2 card hardware
+#    LED1 : PA_0
+#    LED2 : PA_15
+
+    # W_BASE v2 uses SX1272    
+    SX127X: 0
+    SX127X_DIO_0: PB_1
+    SX127X_DIO_1: PB_10
+    SX127X_DIO_2: PB_11
+    SX127X_DIO_3: PB_7
+    SX127X_DIO_4: PB_5
+    SX127X_DIO_5: PB_4
+    SX127X_NSS: PB_0
+    # SPI_1 is STM32 naming, index is 0, this is an enum of value 0
+    SX127X_SPI: SPI_1
+    SX127X_SPI_IDX: 0
+    SX127X_RESET: PA_2
+
+    # W_BASE v3 uses SX126X
+    SX1262: 1
+    SX1262_XTAL_PINA: 0x1B
+    SX1262_XTAL_PINB: 0x1B
+ 
+    SX126X_DIO_1: MCU_GPIO_PORTB(1)
+    SX126X_RADIO_BUSY: MCU_GPIO_PORTB(7)
+    SX126X_NSS: MCU_GPIO_PORTA(4)
+    SX126X_RESET: MCU_GPIO_PORTB(5)
+    SX126X_PWR_ENABLE: MCU_GPIO_PORTB(0)
+    SX126X_SPI: SPI_1
+    SX126X_SPI_IDX: 0
+
+    # antenna rx/tx switch management is independant of the radio type 
+    # code to manipulate these IO is in the BSP v2
+    #RADIO_ANT_SWITCH_TX: 0
+    #RADIO_ANT_SWITCH_RX: 0
+

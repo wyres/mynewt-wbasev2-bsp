@@ -1,0 +1,46 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+# 
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+pkg.name: w_basev3
+pkg.type: bsp
+pkg.description: BSP definition for w_base3 of the Wyres product
+pkg.author: "Apache Mynewt <dev@mynewt.apache.org>"
+pkg.homepage: "http://mynewt.apache.org/"
+pkg.keywords:
+    - stm32
+    - stm32l1
+    - discovery
+
+pkg.cflags: -DSTM32L151xC -DSTM32L152xC
+
+pkg.deps:
+    - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx"
+    # MUST have dependancy baselibc as otherwise STM MCU code won't compile... (depends on baselibc assert.h to include sysdefs.h)
+    - "@apache-mynewt-core/libc/baselibc"
+    - "@apache-mynewt-core/hw/bus/drivers/i2c_common"
+    - "@apache-mynewt-core/hw/bus/drivers/i2c_hal"
+    - "@apache-mynewt-core/hw/mcu/stm/stm32_common"
+
+pkg.deps.UART_0:
+    - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
+#no more use for UART_DBG using bitbang in BSP - its enabled by including its package and more independant of BSP
+pkg.deps.UART_DBG:
+    - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
+
+
