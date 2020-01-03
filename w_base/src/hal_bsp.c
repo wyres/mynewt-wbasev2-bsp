@@ -73,16 +73,6 @@
 #include <mcu/stm32l1_bsp.h>
 #include "mcu/stm32l1xx_mynewt_hal.h"
 #include "mcu/stm32_hal.h"
-#if MYNEWT_VAL(RTC)
-//#include "hal/hal_rtc.h"
-#include "stm32l1xx_hal_rtc.h"
-// TODO these should be in a .h!!!
-void hal_rtc_init(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
-void hal_rtc_enable_wakeup(uint32_t time_ms);
-void hal_rtc_disable_wakeup(void);
-
-#endif
-
 #include "bsp/bsp.h"
 
 // Uart0 is UART1 in STM32 doc hence names of HAL defns
@@ -183,13 +173,6 @@ struct stm32_hal_spi_cfg spi1_cfg = {
     .irq_prio = SPI_1_IRQ_PRIO,
 };
 #endif
-#if MYNEWT_VAL(RTC)
-void hal_rtc_init(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
-void hal_rtc_enable_wakeup(uint32_t time_ms);
-void hal_rtc_disable_wakeup(void);
-#endif
-
-
 static const struct hal_bsp_mem_dump dump_cfg[] = {
     [0] = {
         .hbmd_start = &_ram_start,
@@ -308,10 +291,6 @@ hal_bsp_init(void)
 
     (void)rc;
 
-   /* Configure the source of time base considering current system clocks settings*/
-#if MYNEWT_VAL(RTC)   
-    HAL_InitTick(14);
-#endif
     clock_config();
 
 #if MYNEWT_VAL(UART_0)
@@ -395,36 +374,6 @@ hal_bsp_init(void)
     assert(rc == 0);
 #endif /* USE_BUS_I2C */
 #endif
-
-#if MYNEWT_VAL(RTC)
-
-    RTC_DateTypeDef date =
-    {
-        .Year                     = 0,
-        .Month                    = RTC_MONTH_JANUARY,
-        .Date                     = 1,
-        .WeekDay                  = RTC_WEEKDAY_MONDAY,
-    };
-
-    RTC_TimeTypeDef time =
-    {
-        .Hours                    = 0,
-        .Minutes                  = 0,
-        .Seconds                  = 0,
-        .SubSeconds               = 0,
-        .TimeFormat               = 0,
-        .StoreOperation           = RTC_STOREOPERATION_RESET,
-        .DayLightSaving           = RTC_DAYLIGHTSAVING_NONE,
-    };
-
-    // not in standard mynewt kernal!! commented out until final RTC code is tested
-    hal_rtc_init(&date, &time);
-
-    //hal_rtc_enable_wakeup(300);
-
-#endif
-
-
 }
 
 /**
@@ -721,7 +670,15 @@ void hal_bsp_adc_deinit() {
 }
 #endif  /* ADC */
 
+/* How should this fit in with os_tick_idle() ? 
+int
+hal_bsp_power_state(int state)
+{
+    // call MCU specific sleep state change fn
 
+    return (0);
+}
+*/
 #if MYNEWT_VAL(BSP_POWER_SETUP)
 
 static LP_HOOK_t _hook_get_mode_cb=NULL;
