@@ -83,7 +83,7 @@ syscfg.defs:
 
     BSP_HW_REV:
         description: "version of base card: 1=revB, 2=revC, 3=revD"
-        value: 2
+        value: 3
 
     BSP_POWER_SETUP:
         description: "allow or not the general power mode to be handled from mcu and bsp layers"
@@ -91,32 +91,26 @@ syscfg.defs:
 
     OS_TICKLESS_RTC:
         description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
-        value: 1
-
+        value: 0
+        
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
     REBOOT_LOG_FLASH_AREA: FLASH_AREA_REBOOT_LOG
-#    CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
+    CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
-#    COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
+    COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
     # timer for OS to use by default in the BSP : Timer0
     OS_CPUTIME_TIMER_NUM: 0
 
     # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
     OS_IDLE_TICKLESS_MS_MIN: 10
     OS_IDLE_TICKLESS_MS_MAX: 600000
-    # main stack size- reasonable as we use it for event execution for certain base operations
-    OS_MAIN_STACK_SIZE: 1024
-    # idle stack size increase as lowpower sleep callbacks called on it
-    OS_IDLE_STACK_SIZE: 128
 
     OS_CRASH_RESTORE_REGS: 1
     
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
 
-    #enable I2S
-    I2S: 0
     # enable (STM32 doc RTC)
     RTC: 0
 
@@ -129,32 +123,34 @@ syscfg.vals:
 #    LED2 : PA_15
 
     # W_BASE v2 uses SX1272    
-    SX1272: 1
-    SX1272_DIO_0: PB_1
-    SX1272_DIO_1: PB_10
-    SX1272_DIO_2: PB_11
-    SX1272_DIO_3: PB_7
-    SX1272_DIO_4: PB_5
-    SX1272_DIO_5: PB_4
-    SX1272_NSS: PB_0
+    SX127X: 0
+    SX127X_DIO_0: PB_1
+    SX127X_DIO_1: PB_10
+    SX127X_DIO_2: PB_11
+    SX127X_DIO_3: PB_7
+    SX127X_DIO_4: PB_5
+    SX127X_DIO_5: PB_4
+    SX127X_NSS: PB_0
     # SPI_1 is STM32 naming, index is 0, this is an enum of value 0
-    SX1272_SPI: SPI_1
-    SX1272_SPI_IDX: 0
-    SX1272_RESET: PA_2
+    SX127X_SPI: SPI_1
+    SX127X_SPI_IDX: 0
+    SX127X_RESET: PA_2
 
     # W_BASE v3 uses SX126X
-    SX126X: 0
-    SX126X_XTAL_PINA: 0x1B
-    SX126X_XTAL_PINB: 0x1B
+    SX1262: 1
+    SX1262_XTAL_PINA: 0x1B
+    SX1262_XTAL_PINB: 0x1B
  
     SX126X_DIO_1: MCU_GPIO_PORTB(1)
     SX126X_RADIO_BUSY: MCU_GPIO_PORTB(7)
     SX126X_NSS: MCU_GPIO_PORTA(4)
     SX126X_RESET: MCU_GPIO_PORTB(5)
     SX126X_PWR_ENABLE: MCU_GPIO_PORTB(0)
+    SX126X_SPI: SPI_1
+    SX126X_SPI_IDX: 0
 
     # antenna rx/tx switch management is independant of the radio type 
-    # code to manipulate these IO is in the BSP
-    RADIO_ANT_SWITCH_TX: PA_4
-    RADIO_ANT_SWITCH_RX: PC_13
+    # code to manipulate these IO is in the BSP v2
+    #RADIO_ANT_SWITCH_TX: 0
+    #RADIO_ANT_SWITCH_RX: 0
 
