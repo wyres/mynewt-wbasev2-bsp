@@ -201,8 +201,6 @@ I2S_HandleTypeDef I2S_InitStructure = {
 };
 #endif //I2S
 
-
-
 static const struct hal_bsp_mem_dump dump_cfg[] = {
     [0] = {
         .hbmd_start = &_ram_start,
@@ -400,11 +398,11 @@ hal_bsp_init(void)
     assert(rc == 0);
 #endif /* USE_BUS_I2C */
 #endif
+
 #if MYNEWT_VAL(I2S)
     rc = bsp_init_i2s();
     assert(rc == 0);
 #endif //I2S
-
 }
 
 /**
@@ -765,15 +763,7 @@ int hal_bsp_i2s_read(uint16_t *data)
         return -1;
     }
 #endif //I2S
-/* How should this fit in with os_tick_idle() ? 
-int
-hal_bsp_power_state(int state)
-{
-    // call MCU specific sleep state change fn
 
-    return (0);
-}
-*/
 #if MYNEWT_VAL(BSP_POWER_SETUP)
 
 static LP_HOOK_t _hook_get_mode_cb=NULL;
