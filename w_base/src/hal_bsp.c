@@ -312,9 +312,9 @@ hal_bsp_init(void)
 
     (void)rc;
 
-   /* Configure the source of time base considering current system clocks settings*/
-    HAL_InitTick ((1 << __NVIC_PRIO_BITS) - 1);
+    // SYSTICK clock is initialised by os_tick_init() in hal_os_tick.c
 
+    // Configure other clocks
     clock_config();
 
 #if MYNEWT_VAL(UART_0)
