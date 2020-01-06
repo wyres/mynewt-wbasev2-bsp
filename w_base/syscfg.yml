@@ -97,6 +97,9 @@ syscfg.vals:
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
 
+    #enable I2S
+    I2S: 0
+
     # enabled SPI0 (STM32 doc SPI1) as master
     SPI_0_MASTER: 1
     SPI_1_MASTER: 0

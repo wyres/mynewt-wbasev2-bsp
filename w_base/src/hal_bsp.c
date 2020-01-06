@@ -76,6 +76,9 @@
 #if MYNEWT_VAL(RTC)
 #include "hal/hal_rtc.h"
 #endif
+#if MYNEWT_VAL(I2S)
+#include "stm32l1xx_hal_i2s.h"
+#endif
 
 #include "bsp/bsp.h"
 
@@ -185,6 +188,19 @@ struct stm32_hal_rtc_cfg rtc_cfg = {
     .hrc_s_prediv = 1023
 };
 #endif
+
+#if MYNEWT_VAL(I2S)
+#define I2S_AUDIOFREQ_150K               ((uint32_t)150000)
+I2S_HandleTypeDef I2S_InitStructure = {
+    .Instance = SPI2,
+	.Init.Standard = I2S_STANDARD_PHILIPS,
+	.Init.DataFormat = I2S_DATAFORMAT_16B,
+	.Init.AudioFreq = I2S_AUDIOFREQ_150K,
+	.Init.CPOL = I2S_CPOL_LOW,
+	.Init.Mode = I2S_MODE_MASTER_RX,
+};
+#endif //I2S
+
 
 
 static const struct hal_bsp_mem_dump dump_cfg[] = {
@@ -363,6 +379,10 @@ hal_bsp_init(void)
     assert(rc == 0);
 #endif /* USE_BUS_I2C */
 #endif
+#if MYNEWT_VAL(I2S)
+    rc = bsp_init_i2s();
+    assert(rc == 0);
+#endif //I2S
 }
 
 /**
@@ -429,6 +449,44 @@ int hal_bsp_deinit_i2c() {
     return rc;
 }
 #endif
+
+#if MYNEWT_VAL(I2S)
+int bsp_init_i2s()
+{
+    int rc = -1;
+    // Enable SPI2 APB1 clocks
+	__HAL_RCC_SPI2_CLK_ENABLE();
+
+	// Enable GPIOB clock
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	
+	// I2S peripheral configuration
+	__HAL_I2S_RESET_HANDLE_STATE(&I2S_InitStructure);
+
+    hal_gpio_init_af(MICROPHONE_I2S2_SD_PIN, GPIO_AF5_SPI2, GPIO_PULLUP, GPIO_MODE_AF_PP);
+    hal_gpio_init_af(MICROPHONE_I2S2_CLK_PIN, GPIO_AF5_SPI2, GPIO_PULLUP, GPIO_MODE_AF_PP);
+
+	rc = HAL_I2S_Init(&I2S_InitStructure);
+
+	// SPI1 IRQ Channel configuration
+	HAL_NVIC_SetPriority(SPI2_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(SPI2_IRQn);
+
+  // Enable the I2S
+  __HAL_I2S_ENABLE(&I2S_InitStructure);
+
+    return rc;
+}
+#else
+int bsp_init_i2s()
+{
+    return -1;
+}
+#endif //I2S
+int bsp_deinit_i2s()
+{
+    return 0;
+}
 
 
 // NVM access - we have a EEPROM on this MCU which is handy
@@ -675,3 +733,30 @@ void hal_bsp_adc_release(int pin, int chan) {
 void hal_bsp_adc_deinit() {
 }
 #endif  /* ADC */
+
+#if MYNEWT_VAL(I2S)
+int hal_bsp_i2s_read(uint16_t *data)
+{
+    HAL_StatusTypeDef rc = HAL_ERROR;
+
+    while( __HAL_I2S_GET_FLAG( &I2S_InitStructure, I2S_FLAG_TXE ) == RESET );
+    rc = HAL_I2S_Transmit(&I2S_InitStructure, data, 1, 0xFF);
+    if (rc != HAL_OK)
+    {
+        return -1;
+    }
+
+    while( __HAL_I2S_GET_FLAG( &I2S_InitStructure, I2S_FLAG_RXNE ) == RESET );
+    rc = HAL_I2S_Receive(&I2S_InitStructure, data, 1, 0xFF);
+    if (rc != HAL_OK)
+    {
+        return -1;
+    }
+    return 0;
+}
+#else
+    int hal_bsp_i2s_read(uint16_t *data)
+    {
+        return -1;
+    }
+#endif //I2S

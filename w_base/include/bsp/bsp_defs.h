@@ -70,8 +70,6 @@ extern "C" {
 // Default I2C addres for ST lis2de12 is 0x18, our board pulls SA0 (which is the LSB) high -> 0x19
 #define ACCELERO_I2C_ADDR  0x19
 
-//#define Microphone IIS config?
-
 // I2C0 is first I2C on STM32 (called I2C1 in pinout doc)
 #define I2C_0_SDA       MCU_GPIO_PORTB(9)          // No ADC
 #define I2C_0_SCL       MCU_GPIO_PORTB(8)           // No ADC
@@ -92,6 +90,10 @@ extern "C" {
 // debug uart does bitbang on a gpio (optional)
 #define BSP_UART_DBG_TX MYNEWT_VAL(UART_DBG_TX)
 #define BSP_UART_DBG_RX MYNEWT_VAL(UART_DBG_RX)
+
+// I2S2 Pins
+#define MICROPHONE_I2S2_SD_PIN   MCU_GPIO_PORTB(15)
+#define MICROPHONE_I2S2_CLK_PIN  MCU_GPIO_PORTB(13)
 
 #ifdef __cplusplus
 }
