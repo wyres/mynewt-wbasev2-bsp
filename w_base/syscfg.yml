@@ -95,7 +95,7 @@ syscfg.defs:
 
     OS_TICKLESS_RTC:
         description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
-        value: 1
+        value: 0
 
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
