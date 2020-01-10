@@ -123,18 +123,18 @@ syscfg.vals:
 #    LED2 : PA_15
 
     # W_BASE v2 uses SX1272    
-    SX127X: 0
-    SX127X_DIO_0: PB_1
-    SX127X_DIO_1: PB_10
-    SX127X_DIO_2: PB_11
-    SX127X_DIO_3: PB_7
-    SX127X_DIO_4: PB_5
-    SX127X_DIO_5: PB_4
-    SX127X_NSS: PB_0
-    # SPI_1 is STM32 naming, index is 0, this is an enum of value 0
-    SX127X_SPI: SPI_1
-    SX127X_SPI_IDX: 0
-    SX127X_RESET: PA_2
+    #SX127X: 0
+    # SX127X_DIO_0: PB_1
+    # SX127X_DIO_1: PB_10
+    # SX127X_DIO_2: PB_11
+    # SX127X_DIO_3: PB_7
+    # SX127X_DIO_4: PB_5
+    # SX127X_DIO_5: PB_4
+    # SX127X_NSS: PB_0
+    # # SPI_1 is STM32 naming, index is 0, this is an enum of value 0
+    # SX127X_SPI: SPI_1
+    # SX127X_SPI_IDX: 0
+    # SX127X_RESET: PA_2
 
     # W_BASE v3 uses SX126X
     SX1262: 1
@@ -148,7 +148,7 @@ syscfg.vals:
     SX126X_PWR_ENABLE: MCU_GPIO_PORTB(0)
     SX126X_SPI: SPI_1
     SX126X_SPI_IDX: 0
-
+    
     # antenna rx/tx switch management is independant of the radio type 
     # code to manipulate these IO is in the BSP v2
     #RADIO_ANT_SWITCH_TX: 0

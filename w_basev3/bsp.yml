@@ -20,34 +20,34 @@
 bsp.arch: cortex_m3
 bsp.compiler: '@apache-mynewt-core/compiler/arm-none-eabi-m3'
 bsp.linkerscript:
-    - "w_base/app-stm32l152.ld"
+    - "w_basev3/app-stm32l152.ld"
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx/stm32l152.ld"
-    - "w_base/app-dmz-stm32l15x.ld"
+    - "w_basev3/app-dmz-stm32l15x.ld"
 
 bsp.linkerscript.BOOT_LOADER.OVERWRITE:
-    - "w_base/boot-stm32l152.ld"
+    - "w_basev3/boot-stm32l152.ld"
     - "@apache-mynewt-core/hw/mcu/stm/stm32l1xx/stm32l152.ld"
 
 bsp.downloadscript: "nosuchscript/overrideintargetsyscfg.yml"
 bsp.debugscript: "nosuchscript/overrideintargetsyscfg.yml"
 
-bsp.downloadscript.SEGGER_JLINK: "w_base/jlink_download.sh"
-bsp.debugscript.SEGGER_JLINK: "w_base/jlink_debug.sh"
-bsp.downloadscript.SEGGER_JLINK_WINDOWS.OVERWRITE: "w_base/jlink_download.cmd"
-bsp.debugscript.SEGGER_JLINK_WINDOWS.OVERWRITE: "w_base/jlink_debug.cmd"
+bsp.downloadscript.SEGGER_JLINK: "w_basev3/jlink_download.sh"
+bsp.debugscript.SEGGER_JLINK: "w_basev3/jlink_debug.sh"
+bsp.downloadscript.SEGGER_JLINK_WINDOWS.OVERWRITE: "w_basev3/jlink_download.cmd"
+bsp.debugscript.SEGGER_JLINK_WINDOWS.OVERWRITE: "w_basev3/jlink_debug.cmd"
 
-bsp.downloadscript.OPENOCD_JLINK: "w_base/openocd_jlink_download.sh"
-bsp.debugscript.OPENOCD_JLINK: "w_base/openocd_jlink_debug.sh"
-bsp.downloadscript.OPENOCD_JLINK_WINDOWS.OVERWRITE: "w_base/openocd_jlink_download.cmd"
-bsp.debugscript.OPENOCD_JLINK_WINDOWS.OVERWRITE: "w_base/openocd_jlink_debug.cmd"
+bsp.downloadscript.OPENOCD_JLINK: "w_basev3/openocd_jlink_download.sh"
+bsp.debugscript.OPENOCD_JLINK: "w_basev3/openocd_jlink_debug.sh"
+bsp.downloadscript.OPENOCD_JLINK_WINDOWS.OVERWRITE: "w_basev3/openocd_jlink_download.cmd"
+bsp.debugscript.OPENOCD_JLINK_WINDOWS.OVERWRITE: "w_basev3/openocd_jlink_debug.cmd"
 
-bsp.downloadscript.OPENOCD_STLINK: "w_base/openocd_stlink_download.sh"
-bsp.debugscript.OPENOCD_STLINK: "w_base/openocd_stlink_debug.sh"
-bsp.downloadscript.OPENOCD_STLINK_WINDOWS.OVERWRITE: "w_base/openocd_stlink_download.cmd"
-bsp.debugscript.OPENOCD_STLINK_WINDOWS.OVERWRITE: "w_base/openocd_stlink_debug.cmd"
+bsp.downloadscript.OPENOCD_STLINK: "w_basev3/openocd_stlink_download.sh"
+bsp.debugscript.OPENOCD_STLINK: "w_basev3/openocd_stlink_debug.sh"
+bsp.downloadscript.OPENOCD_STLINK_WINDOWS.OVERWRITE: "w_basev3/openocd_stlink_download.cmd"
+bsp.debugscript.OPENOCD_STLINK_WINDOWS.OVERWRITE: "w_basev3/openocd_stlink_debug.cmd"
 
-bsp.downloadscript.WINDOWS.OVERWRITE: "w_base/openocd_stlink_download.cmd"
-bsp.debugscript.WINDOWS.OVERWRITE: "w_base/openocd_stlink_debug.cmd"
+bsp.downloadscript.WINDOWS.OVERWRITE: "w_basev3/openocd_stlink_download.cmd"
+bsp.debugscript.WINDOWS.OVERWRITE: "w_basev3/openocd_stlink_debug.cmd"
 
 bsp.flash_map:
     areas:
