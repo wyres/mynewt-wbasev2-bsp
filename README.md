@@ -1,10 +1,14 @@
 BSP for Wyres "W_BASE" card
 ----------------------------
 
-Objective : support W_BASE revB (RF switch old) et revC/D (RF switch Skynet new) on MyNewt 1.5.0
+Objective : support Wyres W_BASE cards on MyNewt 1.7.0
+ - v2 revB (SX1272, RF switch old)
+ - v2 revC/D (SX1272, RF switch Skynet new)) 
+ - v3 revA/B (SX1261/2)
+
 Card hardware:
  - STM32L151CC MCU
- - 256kb flash / 32kb RAM / 8kb PROM : MCU based 
+ - 256kb flash / 32kb RAM / 8kb EEPROM : MCU based 
  - UART(1) : MCU based : external grove connector
  - SPI(2) : MCU based : 1 dedicated for radio, 1 on header
  - I2C(1) : MCU based : external grove connector
@@ -27,9 +31,10 @@ UART :
 
 Periphs
  - TIMER1 : 1 -> used as os timer @1MHz frequency
- - I2C1 : 1 -> enables I2C1 in STM32, creates HAL device for 'i2c0', creates devices for accelero and altimeter
+ - I2C_0 : 1 -> enables I2C1 in STM32, creates HAL device for 'i2c0', creates devices for accelero and altimeter
  - SPI_0_MASTER : 1 -> creates SPI1 in STM32, creates 'spi0' device for SX1272
 
-Flash layout
+Flash principal blocks
  - 16Kb : bootloader (mcuboot recommended)
- - 100Kb x 2 : 2 image slots
+ - 160Kb x 1 : main application image slot
+ - 32Kb x 1 : FOTA application slot

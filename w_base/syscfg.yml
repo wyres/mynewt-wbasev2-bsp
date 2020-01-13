@@ -91,7 +91,7 @@ syscfg.defs:
 
     OS_TICKLESS_RTC:
         description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
-        value: 1
+        value: 0
 
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
@@ -105,7 +105,33 @@ syscfg.vals:
     # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
     OS_IDLE_TICKLESS_MS_MIN: 10
     OS_IDLE_TICKLESS_MS_MAX: 600000
+    # main stack size- reasonable as we use it for event execution for certain base operations
+    OS_MAIN_STACK_SIZE: 1024
+    # idle stack size increase as lowpower sleep callbacks called on it
+    OS_IDLE_STACK_SIZE: 128
 
+    OS_CRASH_RESTORE_REGS: 1
+
+    #system clock config with HSI
+    STM32_CLOCK_VOLTAGESCALING_CONFIG: 'PWR_REGULATOR_VOLTAGE_SCALE1'
+    STM32_CLOCK_LSI: 0
+    STM32_CLOCK_LSE: 1
+    STM32_CLOCK_LSE_BYPASS: 0
+    STM32_CLOCK_MSI: 0
+    STM32_CLOCK_MSI_CALIBRATION: 0
+    STM32_CLOCK_MSI_CLOCK_RANGE: 'RCC_MSIRANGE_5'  # 2.097MHz
+    STM32_CLOCK_HSI: 1
+    STM32_CLOCK_HSI_CALIBRATION: 16
+    STM32_CLOCK_HSE: 0
+    STM32_CLOCK_HSE_BYPASS: 0
+    STM32_CLOCK_PLL_MUL: 'RCC_PLL_MUL6'  # 16 * 4 = 64MHz
+    STM32_CLOCK_PLL_DIV: 'RCC_PLL_DIV3'  # 64 / 2 = 32MHz
+    STM32_CLOCK_AHB_DIVIDER: 'RCC_SYSCLK_DIV1'
+    STM32_CLOCK_APB1_DIVIDER: 'RCC_HCLK_DIV1'
+    STM32_CLOCK_APB2_DIVIDER: 'RCC_HCLK_DIV1'
+    STM32_FLASH_LATENCY: 1  # max 32MHz
+    STM32_FLASH_PREFETCH_ENABLE: 0
+    
     
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
