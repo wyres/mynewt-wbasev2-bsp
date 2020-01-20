@@ -69,7 +69,8 @@ syscfg.defs:
 
     ADC:
         description: "ADC use actived (including battery check)"
-        value: 0
+        value: 1
+
     ADC_DEV:
         description: "name of adc mynewt device : currently not used as no mynewt driver for adc for STM32L1"
         value: 'ADC'
@@ -135,9 +136,6 @@ syscfg.vals:
     
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
-
-    # enable (STM32 doc RTC)
-    RTC: 0
 
     # enabled SPI0 (STM32 doc SPI1) as master
     SPI_0_MASTER: 1

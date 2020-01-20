@@ -73,6 +73,10 @@ int hal_bsp_deinit_i2c();
 int bsp_init_i2s();
 int bsp_deinit_i2s();
 int hal_bsp_i2s_read(uint16_t *data);
+
+// Halt board and MCU in lowest power mode possible. Never returns
+void hal_bsp_halt();
+
 /** register sleep hooks up to app */
 typedef int (*LP_HOOK_t)();
 void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit);
