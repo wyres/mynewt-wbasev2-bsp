@@ -101,13 +101,13 @@ syscfg.vals:
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
 #    COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
     # timer for OS to use by default in the BSP : Timer0
-    OS_CPUTIME_TIMER_NUM: -1
+    OS_CPUTIME_TIMER_NUM: 0
 
     # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
     OS_IDLE_TICKLESS_MS_MIN: 1000
     OS_IDLE_TICKLESS_MS_MAX: 600000
     # main stack size- reasonable as we use it for event execution for certain mgrs (uart etc)
-    OS_MAIN_STACK_SIZE: 1024
+    OS_MAIN_STACK_SIZE: 512
     # idle stack size increase as lowpower sleep callbacks called on it
     OS_IDLE_STACK_SIZE: 128
 
