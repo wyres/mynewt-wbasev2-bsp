@@ -84,6 +84,8 @@ void hal_rtc_disable_wakeup(void);
 #endif
 
 #include "bsp/bsp.h"
+// Should be in header file??
+extern void hal_mcu_halt();     
 
 // Uart0 is UART1 in STM32 doc hence names of HAL defns
 #if MYNEWT_VAL(UART_0)
@@ -713,6 +715,21 @@ void hal_bsp_adc_deinit() {
 #endif  /* ADC */
 
 
+/** enter a MCU stop mode, with all periphs off or lowest possible power, and never return */
+void hal_bsp_halt() {
+    // If registered, tell lowpowermgr to deinit stuff
+    hal_bsp_power_handler_sleep_enter();
+    // disable board level periphs
+    hal_bsp_deinit_i2c();
+//    bsp_deinit_i2s();  not yet present on v3 board
+    hal_bsp_adc_deinit();
+    // SPI
+    // TODO
+
+    // ask MCU HAL to stop it
+    hal_mcu_halt();
+}
+
 #if MYNEWT_VAL(BSP_POWER_SETUP)
 
 static LP_HOOK_t _hook_get_mode_cb=NULL;
@@ -762,6 +779,15 @@ void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit) {
     (void)getMode;
     (void)enter;
     (void)exit;
+}
+int hal_bsp_power_handler_get_mode(os_time_t ticks) {
+    return HAL_BSP_POWER_WFI;
+}
+void hal_bsp_power_handler_sleep_enter() {
+
+}
+void hal_bsp_power_handler_sleep_exit(void) {
+    
 }
 
 #endif

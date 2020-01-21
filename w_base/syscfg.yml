@@ -106,7 +106,7 @@ syscfg.vals:
     # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
     OS_IDLE_TICKLESS_MS_MIN: 10
     OS_IDLE_TICKLESS_MS_MAX: 600000
-    # main stack size- reasonable as we use it for event execution for certain base operations
+    # main stack size- reasonable as we use it for event execution for certain mgrs (uart etc)
     OS_MAIN_STACK_SIZE: 1024
     # idle stack size increase as lowpower sleep callbacks called on it
     OS_IDLE_STACK_SIZE: 128
