@@ -101,10 +101,10 @@ syscfg.vals:
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
 #    COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
     # timer for OS to use by default in the BSP : Timer0
-    OS_CPUTIME_TIMER_NUM: 0
+    OS_CPUTIME_TIMER_NUM: -1
 
     # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
-    OS_IDLE_TICKLESS_MS_MIN: 10
+    OS_IDLE_TICKLESS_MS_MIN: 1000
     OS_IDLE_TICKLESS_MS_MAX: 600000
     # main stack size- reasonable as we use it for event execution for certain mgrs (uart etc)
     OS_MAIN_STACK_SIZE: 1024
@@ -113,7 +113,7 @@ syscfg.vals:
 
     OS_CRASH_RESTORE_REGS: 1
 
-    #system clock config with HSI
+    #system clock config with HSE (XTAL@16MHz)
     STM32_CLOCK_VOLTAGESCALING_CONFIG: 'PWR_REGULATOR_VOLTAGE_SCALE1'
     STM32_CLOCK_LSI: 0
     STM32_CLOCK_LSE: 1
@@ -125,8 +125,8 @@ syscfg.vals:
     STM32_CLOCK_HSI_CALIBRATION: 16
     STM32_CLOCK_HSE: 0
     STM32_CLOCK_HSE_BYPASS: 0
-    STM32_CLOCK_PLL_MUL: 'RCC_PLL_MUL6'  # 16 * 4 = 64MHz
-    STM32_CLOCK_PLL_DIV: 'RCC_PLL_DIV3'  # 64 / 2 = 32MHz
+    STM32_CLOCK_PLL_MUL: 'RCC_PLL_MUL4'  # HSE : 16 * 4 = 64MHz; 
+    STM32_CLOCK_PLL_DIV: 'RCC_PLL_DIV2'  # HSE : 64 / 2 = 32MHz;
     STM32_CLOCK_AHB_DIVIDER: 'RCC_SYSCLK_DIV1'
     STM32_CLOCK_APB1_DIVIDER: 'RCC_HCLK_DIV1'
     STM32_CLOCK_APB2_DIVIDER: 'RCC_HCLK_DIV1'
