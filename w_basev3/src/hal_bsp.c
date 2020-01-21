@@ -710,21 +710,6 @@ void hal_bsp_halt() {
     hal_mcu_halt();
 }
 
-/** enter a MCU stop mode, with all periphs off or lowest possible power, and never return */
-void hal_bsp_halt() {
-    // If registered, tell lowpowermgr to deinit stuff
-    hal_bsp_power_handler_sleep_enter();
-    // disable board level periphs
-    hal_bsp_deinit_i2c();
-//    bsp_deinit_i2s();  not yet present on v3 board
-    hal_bsp_adc_deinit();
-    // SPI
-    // TODO
-
-    // ask MCU HAL to stop it
-    hal_mcu_halt();
-}
-
 #if MYNEWT_VAL(BSP_POWER_SETUP)
 
 static LP_HOOK_t _hook_get_mode_cb=NULL;
