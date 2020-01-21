@@ -70,6 +70,10 @@ void hal_bsp_adc_deinit();
 int hal_bsp_init_i2c();
 int hal_bsp_deinit_i2c();
 
+int bsp_init_i2s();
+int bsp_deinit_i2s();
+int hal_bsp_i2s_read(uint16_t *data);
+
 // Halt board and MCU in lowest power mode possible. Never returns
 void hal_bsp_halt();
 
