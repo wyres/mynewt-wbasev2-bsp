@@ -74,16 +74,16 @@
 #include "mcu/stm32l1xx_mynewt_hal.h"
 #include "mcu/stm32_hal.h"
 #if MYNEWT_VAL(RTC)
-#include "hal/hal_rtc.h"
-#include "stm32l1xx_hal_rtc.h"
-// TODO these should be in a .h!!!
-void hal_rtc_init(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
-void hal_rtc_enable_wakeup(uint32_t time_ms);
-void hal_rtc_disable_wakeup(void);
-
+//#include "hal/hal_rtc.h"
+#endif
+#if MYNEWT_VAL(I2S)
+#include "stm32l1xx_hal_i2s.h"
 #endif
 
 #include "bsp/bsp.h"
+
+// Should be in header file??
+extern void hal_mcu_halt();     
 
 // Uart0 is UART1 in STM32 doc hence names of HAL defns
 #if MYNEWT_VAL(UART_0)
@@ -184,15 +184,17 @@ struct stm32_hal_spi_cfg spi1_cfg = {
 };
 #endif
 
-#if MYNEWT_VAL(RTC)
-struct stm32_hal_rtc_cfg rtc_cfg = {
-    .hrc_hour_fmt = 24,
-    .hrc_a_prediv = 31,
-    .hrc_s_prediv = 1023
+#if MYNEWT_VAL(I2S)
+#define I2S_AUDIOFREQ_150K               ((uint32_t)150000)
+I2S_HandleTypeDef I2S_InitStructure = {
+    .Instance = SPI2,
+	.Init.Standard = I2S_STANDARD_PHILIPS,
+	.Init.DataFormat = I2S_DATAFORMAT_16B,
+	.Init.AudioFreq = I2S_AUDIOFREQ_150K,
+	.Init.CPOL = I2S_CPOL_LOW,
+	.Init.Mode = I2S_MODE_MASTER_RX,
 };
-#endif
-
-
+#endif //I2S
 static const struct hal_bsp_mem_dump dump_cfg[] = {
     [0] = {
         .hbmd_start = &_ram_start,
@@ -220,65 +222,13 @@ hal_bsp_core_dump(int *area_cnt)
     return dump_cfg;
 }
 
-static void
-clock_config(void)
+
+void
+hal_bsp_init(void)
 {
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
-    RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+    int rc;
 
-#ifdef HIGH_SPEED_EXTERNAL_OSCILLATOR_CLOCK
-    __HAL_RCC_PWR_CLK_ENABLE();
-    __HAL_PWR_VOLTAGESCALING_CONFIG( PWR_REGULATOR_VOLTAGE_SCALE1 );
-
-    /* Enable HSI Oscillator and Activate PLL with HSI as source */
-    RCC_OscInitStruct.OscillatorType = (RCC_OSCILLATORTYPE_HSE |
-                                        RCC_OSCILLATORTYPE_LSE);
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-    RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
-#else
-
-    /* Enable HSI Oscillator and Activate PLL with HSI as source */
-    RCC_OscInitStruct.OscillatorType = (RCC_OSCILLATORTYPE_HSI|
-                                        RCC_OSCILLATORTYPE_LSE);
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-//    RCC_OscInitStruct.LSEState = RCC_LSE_ON; Causes default_irq()!
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-    RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
-#endif
-
-
-    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-        assert(0);
-    }
-
-    /* Set Voltage scale1 as MCU will run at 32MHz */
-    __HAL_RCC_PWR_CLK_ENABLE();
-    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-
-    /* Poll VOSF bit of in PWR_CSR. Wait until it is reset to 0 */
-    while (__HAL_PWR_GET_FLAG(PWR_FLAG_VOS) != RESET) ;
-
-    /*
-     * Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
-     * clocks dividers
-     */
-    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | \
-                                   RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
-        assert(0);
-    }
-    
+    (void)rc;
 
 #if MYNEWT_VAL(I2C_0) || MYNEWT_VAL(RTC) || MYNEWT_VAL(RNG)
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
@@ -295,19 +245,6 @@ clock_config(void)
         assert(0);
     }
 #endif
-}
-
-void
-hal_bsp_init(void)
-{
-    int rc;
-
-    (void)rc;
-
-   /* Configure the source of time base considering current system clocks settings*/
-    HAL_InitTick ((1 << __NVIC_PRIO_BITS) - 1);
-
-    clock_config();
 
 #if MYNEWT_VAL(UART_0)
     rc = os_dev_create((struct os_dev *) &hal_uart0, UART0_DEV,
@@ -326,7 +263,7 @@ hal_bsp_init(void)
     hal_timer_init(0, TIM2);
 #endif
 
-#if MYNEWT_VAL(TIMER_1)
+#if MYNEWT_VAL(TIMER_1)    
     hal_timer_init(1, TIM3);
 #endif
 
@@ -391,31 +328,10 @@ hal_bsp_init(void)
 #endif /* USE_BUS_I2C */
 #endif
 
-#if MYNEWT_VAL(RTC)
-    RTC_DateTypeDef date =
-    {
-        .Year                     = 0,
-        .Month                    = RTC_MONTH_JANUARY,
-        .Date                     = 1,
-        .WeekDay                  = RTC_WEEKDAY_MONDAY,
-    };
-
-    RTC_TimeTypeDef time =
-    {
-        .Hours                    = 0,
-        .Minutes                  = 0,
-        .Seconds                  = 0,
-        .SubSeconds               = 0,
-        .TimeFormat               = 0,
-        .StoreOperation           = RTC_STOREOPERATION_RESET,
-        .DayLightSaving           = RTC_DAYLIGHTSAVING_NONE,
-    };
-
-// not in standard mynewt kernal!! commented out until final RTC code is tested
-//     hal_rtc_init(&date, &time);
-
-    //hal_rtc_enable_wakeup(200);
-#endif
+#if MYNEWT_VAL(I2S)
+    rc = bsp_init_i2s();
+    assert(rc == 0);
+#endif //I2S
 }
 
 /**
@@ -482,6 +398,44 @@ int hal_bsp_deinit_i2c() {
     return rc;
 }
 #endif
+
+#if MYNEWT_VAL(I2S)
+int bsp_init_i2s()
+{
+    int rc = -1;
+    // Enable SPI2 APB1 clocks
+	__HAL_RCC_SPI2_CLK_ENABLE();
+
+	// Enable GPIOB clock
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	
+	// I2S peripheral configuration
+	__HAL_I2S_RESET_HANDLE_STATE(&I2S_InitStructure);
+
+    hal_gpio_init_af(MICROPHONE_I2S2_SD_PIN, GPIO_AF5_SPI2, GPIO_PULLUP, GPIO_MODE_AF_PP);
+    hal_gpio_init_af(MICROPHONE_I2S2_CLK_PIN, GPIO_AF5_SPI2, GPIO_PULLUP, GPIO_MODE_AF_PP);
+
+	rc = HAL_I2S_Init(&I2S_InitStructure);
+
+	// SPI1 IRQ Channel configuration
+	HAL_NVIC_SetPriority(SPI2_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(SPI2_IRQn);
+
+  // Enable the I2S
+  __HAL_I2S_ENABLE(&I2S_InitStructure);
+
+    return rc;
+}
+#else
+int bsp_init_i2s()
+{
+    return -1;
+}
+#endif //I2S
+int bsp_deinit_i2s()
+{
+    return 0;
+}
 
 
 // NVM access - we have a EEPROM on this MCU which is handy
@@ -712,6 +666,47 @@ void hal_bsp_adc_deinit() {
 }
 #endif  /* ADC */
 
+#if MYNEWT_VAL(I2S)
+int hal_bsp_i2s_read(uint16_t *data)
+{
+    HAL_StatusTypeDef rc = HAL_ERROR;
+
+    while( __HAL_I2S_GET_FLAG( &I2S_InitStructure, I2S_FLAG_TXE ) == RESET );
+    rc = HAL_I2S_Transmit(&I2S_InitStructure, data, 1, 0xFF);
+    if (rc != HAL_OK)
+    {
+        return -1;
+    }
+
+    while( __HAL_I2S_GET_FLAG( &I2S_InitStructure, I2S_FLAG_RXNE ) == RESET );
+    rc = HAL_I2S_Receive(&I2S_InitStructure, data, 1, 0xFF);
+    if (rc != HAL_OK)
+    {
+        return -1;
+    }
+    return 0;
+}
+#else
+    int hal_bsp_i2s_read(uint16_t *data)
+    {
+        return -1;
+    }
+#endif //I2S
+
+/** enter a MCU stop mode, with all periphs off or lowest possible power, and never return */
+void hal_bsp_halt() {
+    // If registered, tell lowpowermgr to deinit stuff
+    hal_bsp_power_handler_sleep_enter();
+    // disable board level periphs
+    hal_bsp_deinit_i2c();
+    bsp_deinit_i2s();
+    hal_bsp_adc_deinit();
+    // SPI
+    // TODO
+
+    // ask MCU HAL to stop it
+    hal_mcu_halt();
+}
 
 #if MYNEWT_VAL(BSP_POWER_SETUP)
 
@@ -762,6 +757,15 @@ void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit) {
     (void)getMode;
     (void)enter;
     (void)exit;
+}
+int hal_bsp_power_handler_get_mode(os_time_t ticks) {
+    return HAL_BSP_POWER_WFI;
+}
+void hal_bsp_power_handler_sleep_enter() {
+
+}
+void hal_bsp_power_handler_sleep_exit(void) {
+    
 }
 
 #endif
