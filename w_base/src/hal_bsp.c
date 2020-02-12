@@ -126,7 +126,7 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = BSP_UART_0_TX, 								.idle_type = GPIO_NOPULL	},
     { .pin = BSP_UART_0_RX, 								.idle_type = GPIO_NOPULL	},
     { .pin = EXT_UART_PWR, 									.idle_type = GPIO_PULLUP	},
-    
+ 
     { .pin = I2C_0_SDA, 									.idle_type = GPIO_PULLUP	},
     { .pin = I2C_0_SCL, 									.idle_type = GPIO_PULLUP    },
     { .pin = EXT_I2C_PWR, 									.idle_type = GPIO_PULLUP	},
@@ -137,7 +137,7 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = SPEAKER, 										.idle_type = GPIO_PULLUP	},
     /*WARNING : SENSOR_PWR still drains current even in INPUT.PULL_DOWN mode. This pin  */
     /*          must be in OUTPUT zero                                                  */
-    /*{ .pin = SENSOR_PWR, 									.idle_type = GPIO_PULLDOWN 	},*/
+    //{ .pin = SENSOR_PWR, 									.idle_type = GPIO_PULLDOWN 	},
 
     { .pin = EXT_IO, 										.idle_type = GPIO_PULLDOWN	},
     { .pin = EXT_BUTTON, 									.idle_type = GPIO_PULLDOWN	},
@@ -149,7 +149,7 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 
     { .pin = HSE_IN, 										.idle_type = GPIO_NOPULL 	},
     { .pin = HSE_OUT, 										.idle_type = GPIO_NOPULL 	},
-    
+ 
     /*TODO : test it */
     /*{ .pin = LSE_IN, 										.idle_type = GPIO_PULLDOWN 	},  */
     /*{ .pin = LSE_OUT, 										.idle_type = GPIO_PULLDOWN 	},*/
@@ -160,7 +160,7 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 void bsp_deinit_all_ios()
 {
     int i, pin, type;
-
+    
     GPIO_InitTypeDef highz_cfg = {
         .Mode = GPIO_MODE_ANALOG,
         .Pull = GPIO_NOPULL
@@ -175,18 +175,17 @@ void bsp_deinit_all_ios()
             //deinit will set it as configured
             hal_gpio_deinit(pin);
             if(type==GPIO_NOPULL){
+                /*note for HIGH_Z mode :                                */
+                /*analog input setup is recommmended for lowest power   */
+                /*consumptioin but actually not allowed by hal_gpio.c   */
                 highz_cfg.Pin = pin;
                 highz_cfg.Alternate = pin;
                 hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
-                //hal_gpio_init_analog_input(pin);
             }else{
                 hal_gpio_init_in(pin, type);
             }
 
-            /*note for HIGH_Z mode :                                */
-            /*analog input setup is recommmended for lowest power   */
-            /*consumptioin but actually not allowed by hal_gpio.c   */
-            /*-> Set it up in input no-pull mode                    */
+
 
 
         }
@@ -518,36 +517,6 @@ int hal_bsp_spi_deinit(void){
 #endif
 
     return 0;
-
-
-#if 0
-    int rc;
-
-// note : SPI0 is SPI1 in STM32 doc
-#if MYNEWT_VAL(SPI_0_MASTER)
-    rc = hal_spi_deinit(0, &spi0_cfg, HAL_SPI_TYPE_MASTER);
-    assert(rc == 0);
-#endif
-
-#if MYNEWT_VAL(SPI_0_SLAVE)
-    rc = hal_spi_deinit(0, &spi0_cfg, HAL_SPI_TYPE_SLAVE);
-    assert(rc == 0);
-#endif
-
-#if MYNEWT_VAL(SPI_1_MASTER)
-    // MyNewt numbers devices from 0
-    rc = hal_spi_deinit(1, &spi1_cfg, HAL_SPI_TYPE_MASTER);
-    assert(rc == 0);
-#endif
-
-#if MYNEWT_VAL(SPI_1_SLAVE)
-    rc = hal_spi_deinit(1, &spi1_cfg, HAL_SPI_TYPE_SLAVE);
-    assert(rc == 0);
-#endif
-
-    return 0;
-
-#endif
 }
 
 #endif
@@ -599,23 +568,6 @@ int hal_bsp_deinit_i2c() {
    	hal_gpio_init_in(i2c0_cfg.hic_pin_scl, HAL_GPIO_PULL_UP);    
 #endif
     return 0;
-    
-#if 0
-    
-    int rc = 0;
-#if MYNEWT_VAL(I2C_0)
-    rc = hal_i2c_deinit(0, &i2c0_cfg);
-#endif
-#if MYNEWT_VAL(I2C_1)
-    rc = hal_i2c_deinit(1, &i2c1_cfg);
-#endif
-#if MYNEWT_VAL(I2C_2)
-    rc = hal_i2c_deinit(2, &i2c2_cfg);
-#endif
-    return rc;
-
-#endif
-
 }
 #endif
 
@@ -976,31 +928,30 @@ int hal_bsp_uart_init(int num)
 // Uart0 is UART1 in STM32 doc hence names of HAL defns
 void hal_bsp_uart_deinit(int num)
 {
+#if MYNEWT_VAL(UART_0)
     GPIO_InitTypeDef highz_cfg = {
         .Mode = GPIO_MODE_ANALOG,
         .Pull = GPIO_NOPULL
     };
 
-#if MYNEWT_VAL(UART_0)
-
     assert((num+1) <= NELEMS(uart_cfg));
 
-    __HAL_RCC_USART1_FORCE_RESET( );
-    __HAL_RCC_USART1_RELEASE_RESET( );
-    __HAL_RCC_USART1_CLK_DISABLE( );
+    if(num == 0)
+    {
+        __HAL_RCC_USART1_FORCE_RESET( );
+        __HAL_RCC_USART1_RELEASE_RESET( );
+        __HAL_RCC_USART1_CLK_DISABLE( );
 
-    hal_gpio_deinit(uart_cfg[num].suc_pin_tx);
-    highz_cfg.Pin = uart_cfg[num].suc_pin_tx;
-    highz_cfg.Alternate = uart_cfg[num].suc_pin_tx;
-    hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
-    //hal_gpio_init_analog_input(uart_cfg[num].suc_pin_tx);
-    
-    hal_gpio_deinit(uart_cfg[num].suc_pin_rx);
-    highz_cfg.Pin = uart_cfg[num].suc_pin_rx;
-    highz_cfg.Alternate = uart_cfg[num].suc_pin_rx;
-    hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
-    //hal_gpio_init_analog_input(uart_cfg[num].suc_pin_tx);
-    
+        hal_gpio_deinit(uart_cfg[num].suc_pin_tx);
+        highz_cfg.Pin = uart_cfg[num].suc_pin_tx;
+        highz_cfg.Alternate = uart_cfg[num].suc_pin_tx;
+        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+        
+        hal_gpio_deinit(uart_cfg[num].suc_pin_rx);
+        highz_cfg.Pin = uart_cfg[num].suc_pin_rx;
+        highz_cfg.Alternate = uart_cfg[num].suc_pin_rx;
+        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    }
 #endif //MYNEWT_VAL(UART_0)
 }
 
