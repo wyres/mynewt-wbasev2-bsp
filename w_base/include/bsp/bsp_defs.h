@@ -49,20 +49,20 @@ extern "C" {
 // Mappings for generic code modules are in the syscfg
 
 /* GPIO  type pins */
-#define LED_1           MCU_GPIO_PORTA(0)       // also ADC input 0
-#define LED_2           MCU_GPIO_PORTA(15)      // No ADC
+#define LED_1                               MCU_GPIO_PORTA(0)       // also ADC input 0
+#define LED_2                               MCU_GPIO_PORTA(15)      // No ADC
 #define LED_BLINK_PIN   LED_1
 
-#define LIGHT_SENSOR    MCU_GPIO_PORTA(3)       // ADC channel 3
+#define LIGHT_SENSOR                        MCU_GPIO_PORTA(3)       // ADC channel 3
 #define LIGHT_SENSOR_ADCCHAN (ADC_CHANNEL_3)
-#define EXT_IO          MCU_GPIO_PORTA(8)       // No ADC
+#define EXT_IO                              MCU_GPIO_PORTA(8)       // No ADC
 
-#define EXT_BUTTON      MCU_GPIO_PORTB(3)       // No ADC
-#define BUTTON          (EXT_BUTTON)
-#define SPEAKER         MCU_GPIO_PORTA(1)       // also ADC input 1
-#define EXT_UART_PWR    MCU_GPIO_PORTA(11)      // No ADC
-#define EXT_I2C_PWR     MCU_GPIO_PORTA(12)      // No ADC
-#define SENSOR_PWR      MCU_GPIO_PORTB(6)       // No ADC
+#define EXT_BUTTON                          MCU_GPIO_PORTB(3)       // No ADC
+#define BUTTON                              (EXT_BUTTON)
+#define SPEAKER                             MCU_GPIO_PORTA(1)       // also ADC input 1
+#define EXT_UART_PWR                        MCU_GPIO_PORTA(11)      // No ADC
+#define EXT_I2C_PWR                         MCU_GPIO_PORTA(12)      // No ADC
+#define SENSOR_PWR                          MCU_GPIO_PORTB(6)       // No ADC
 
 #define BATTERY_GPIO    (128)                   // needs a gpio pin number, but of a value that is beyond 'real' ones
 #define BATTERY_ADCCHAN (ADC_CHANNEL_VREFINT)
@@ -76,30 +76,53 @@ extern "C" {
 #define ACCELERO_I2C_ADDR  0x19
 
 // I2C0 is first I2C on STM32 (called I2C1 in pinout doc)
-#define I2C_0_SDA       MCU_GPIO_PORTB(9)          // No ADC
-#define I2C_0_SCL       MCU_GPIO_PORTB(8)           // No ADC
+#define I2C_0_SDA                           MCU_GPIO_PORTB(9)          // No ADC
+#define I2C_0_SCL                           MCU_GPIO_PORTB(8)           // No ADC
 #define I2C_0_FREQUENCY (100000)
 
 // SPI0 is mynewt numbering, but SPI1 is STM32 name for first SPI. 
-#define SPI_0_MASTER_PIN_MOSI MCU_GPIO_PORTA(7)
-#define SPI_0_MASTER_PIN_MISO MCU_GPIO_PORTA(6)
-#define SPI_0_MASTER_PIN_SCK MCU_GPIO_PORTA(5)
-#define SPI_0_MASTER_PIN_NSS  MCU_GPIO_PORTB(0)
+#define SPI_0_MASTER_PIN_MOSI               MCU_GPIO_PORTA(7)
+#define SPI_0_MASTER_PIN_MISO               MCU_GPIO_PORTA(6)
+#define SPI_0_MASTER_PIN_SCK                MCU_GPIO_PORTA(5)
+#define SPI_0_MASTER_PIN_NSS                MCU_GPIO_PORTB(0)
 #define SPI_0_IRQ_PRIO (2)
 #define SPI_0_BAUDRATE (3000)
 
 // ditto for UART
-#define BSP_UART_0_TX MCU_GPIO_PORTA(9)             // No ADC
-#define BSP_UART_0_RX MCU_GPIO_PORTA(10)            // No ADC
+#define BSP_UART_0_TX                       MCU_GPIO_PORTA(9)             // No ADC
+#define BSP_UART_0_RX                       MCU_GPIO_PORTA(10)            // No ADC
 
 // debug uart does bitbang on a gpio (optional)
-#define BSP_UART_DBG_TX MYNEWT_VAL(UART_DBG_TX)
-#define BSP_UART_DBG_RX MYNEWT_VAL(UART_DBG_RX)
+#define BSP_UART_DBG_TX                     MYNEWT_VAL(UART_DBG_TX)
+#define BSP_UART_DBG_RX                     MYNEWT_VAL(UART_DBG_RX)
 
 // I2S2 Pins
-#define MICROPHONE_I2S2_SD_PIN   MCU_GPIO_PORTB(15)
-#define MICROPHONE_I2S2_CLK_PIN  MCU_GPIO_PORTB(13)
+#define MICROPHONE_I2S2_SD_PIN              MCU_GPIO_PORTB(15)
+#define MICROPHONE_I2S2_CLK_PIN             MCU_GPIO_PORTB(13)
 
+#define SX1272_DIO_0						MCU_GPIO_PORTB(1)
+#define SX1272_DIO_1						MCU_GPIO_PORTB(10)
+#define SX1272_DIO_2						MCU_GPIO_PORTB(11)
+#define SX1272_DIO_3						MCU_GPIO_PORTB(7)
+#define SX1272_DIO_4						MCU_GPIO_PORTB(5)
+#define SX1272_DIO_5						MCU_GPIO_PORTB(4)
+#define SX1272_NSS							MCU_GPIO_PORTB(0)
+#define SX1272_RESET						MCU_GPIO_PORTA(2)
+
+#define ANTENNA_SWITCH_TX					MCU_GPIO_PORTA(4)
+#define ANTENNA_SWITCH_RX					MCU_GPIO_PORTC(13)
+
+#define SPI_1_MASTER_PIN_MISO               MCU_GPIO_PORTB(14)
+#define SPI_1_MASTER_PIN_CS                 MCU_GPIO_PORTB(12)
+
+#define SWD_CLK								MCU_GPIO_PORTA(14)
+#define SWD_DIO								MCU_GPIO_PORTA(13)
+
+#define HSE_IN		 						MCU_GPIO_PORTH(0)
+#define HSE_OUT								MCU_GPIO_PORTH(1)
+
+#define LSE_IN		 						MCU_GPIO_PORTC(14)
+#define LSE_OUT								MCU_GPIO_PORTC(15)
 #define LSE_VALUE    (32768U)
 
 #ifdef __cplusplus

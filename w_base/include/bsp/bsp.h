@@ -67,6 +67,9 @@ int hal_bsp_adc_read(int chan);
 void hal_bsp_adc_release(int pin, int chan);
 void hal_bsp_adc_deinit();
 
+int hal_bsp_spi_init(void);
+int hal_bsp_spi_deinit(void);
+
 int hal_bsp_init_i2c();
 int hal_bsp_deinit_i2c();
 
@@ -82,8 +85,8 @@ typedef int (*LP_HOOK_t)();
 void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit);
 /** functions called from OS (os.c and hal_os_tick.c) */
 int hal_bsp_power_handler_get_mode(os_time_t ticks);
-void hal_bsp_power_handler_sleep_enter(void);
-void hal_bsp_power_handler_sleep_exit(void);
+void hal_bsp_power_handler_sleep_enter(int nextMode);
+void hal_bsp_power_handler_sleep_exit(int lastMode);
 
 #ifdef __cplusplus
 }

@@ -75,8 +75,8 @@ typedef int (*LP_HOOK_t)();
 void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit);
 /** functions called from OS (os.c and hal_os_tick.c) */
 int hal_bsp_power_handler_get_mode(os_time_t ticks);
-void hal_bsp_power_handler_sleep_enter(void);
-void hal_bsp_power_handler_sleep_exit(void);
+void hal_bsp_power_handler_sleep_enter(int nextMode);
+void hal_bsp_power_handler_sleep_exit(int lastMode);
 
 #ifdef __cplusplus
 }
