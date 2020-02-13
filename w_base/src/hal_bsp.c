@@ -75,9 +75,6 @@
 #include <mcu/stm32l1_bsp.h>
 #include "mcu/stm32l1xx_mynewt_hal.h"
 #include "mcu/stm32_hal.h"
-#if MYNEWT_VAL(RTC)
-//#include "hal/hal_rtc.h"
-#endif
 #if MYNEWT_VAL(I2S)
 #include "stm32l1xx_hal_i2s.h"
 #endif
@@ -86,8 +83,8 @@
 
 // Should be in header file??
 extern void hal_mcu_halt();  
-int hal_bsp_uart_init(int num);
-int hal_gpio_init_stm(int pin, GPIO_InitTypeDef *cfg);
+extern int hal_gpio_init_stm(int pin, GPIO_InitTypeDef *cfg);
+void hal_bsp_uart_init(void);
 
 /*
 *   Array with all idle/default gpio mode 
@@ -97,19 +94,17 @@ int hal_gpio_init_stm(int pin, GPIO_InitTypeDef *cfg);
 typedef struct
 {
 	int pin;
-	int idle_type;  //as defined in stm32l1xx_hal_gpio.h
-	
+	int idle_type;  /*as defined in stm32l1xx_hal_gpio.h */
 }w_base_v2_pins_t;
 
 static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 {
     
-    /*{ .pin = SPI_0_MASTER_PIN_NSS, 							.idle_type = GPIO_PULLUP	},
-    { .pin = SPI_0_MASTER_PIN_SCK, 							.idle_type = GPIO_PULLDOWN	},
+    { .pin = SPI_0_MASTER_PIN_NSS, 							.idle_type = GPIO_PULLUP	},
+    { .pin = SPI_0_MASTER_PIN_SCK, 							.idle_type = GPIO_NOPULL	},
     { .pin = SPI_0_MASTER_PIN_MISO, 						.idle_type = GPIO_NOPULL	},
-    { .pin = SPI_0_MASTER_PIN_MOSI, 						.idle_type = GPIO_PULLUP	},
-    */
-
+    { .pin = SPI_0_MASTER_PIN_MOSI, 						.idle_type = GPIO_NOPULL	},
+    
     { .pin = SX1272_DIO_0, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_1, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_2, 									.idle_type = GPIO_NOPULL	},
@@ -127,8 +122,8 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = BSP_UART_0_RX, 								.idle_type = GPIO_NOPULL	},
     { .pin = EXT_UART_PWR, 									.idle_type = GPIO_PULLUP	},
  
-    { .pin = I2C_0_SDA, 									.idle_type = GPIO_PULLUP	},
-    { .pin = I2C_0_SCL, 									.idle_type = GPIO_PULLUP    },
+    { .pin = I2C_0_SDA, 									.idle_type = GPIO_NOPULL	},
+    { .pin = I2C_0_SCL, 									.idle_type = GPIO_NOPULL    },
     { .pin = EXT_I2C_PWR, 									.idle_type = GPIO_PULLUP	},
 
     { .pin = MICROPHONE_I2S2_SD_PIN, 						.idle_type = GPIO_PULLDOWN	},
@@ -137,22 +132,23 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = SPEAKER, 										.idle_type = GPIO_PULLUP	},
     /*WARNING : SENSOR_PWR still drains current even in INPUT.PULL_DOWN mode. This pin  */
     /*          must be in OUTPUT zero                                                  */
-    //{ .pin = SENSOR_PWR, 									.idle_type = GPIO_PULLDOWN 	},
+    /*{ .pin = SENSOR_PWR, 									.idle_type = GPIO_PULLDOWN 	},*/
 
     { .pin = EXT_IO, 										.idle_type = GPIO_PULLDOWN	},
     { .pin = EXT_BUTTON, 									.idle_type = GPIO_PULLDOWN	},
     { .pin = SPI_1_MASTER_PIN_MISO,							.idle_type = GPIO_PULLDOWN	},
     { .pin = SPI_1_MASTER_PIN_CS,							.idle_type = GPIO_PULLDOWN	},
 
+#if MYNEWT_VAL(BUILD_RELEASE)
     { .pin = SWD_CLK, 										.idle_type = GPIO_PULLDOWN 	},
     { .pin = SWD_DIO, 										.idle_type = GPIO_PULLDOWN 	},
-
+#endif
     { .pin = HSE_IN, 										.idle_type = GPIO_NOPULL 	},
     { .pin = HSE_OUT, 										.idle_type = GPIO_NOPULL 	},
  
     /*TODO : test it */
-    /*{ .pin = LSE_IN, 										.idle_type = GPIO_PULLDOWN 	},  */
-    /*{ .pin = LSE_OUT, 										.idle_type = GPIO_PULLDOWN 	},*/
+    { .pin = LSE_IN, 										.idle_type = GPIO_PULLDOWN 	},
+    { .pin = LSE_OUT, 										.idle_type = GPIO_PULLDOWN 	},
 };
 
 
@@ -177,22 +173,18 @@ void bsp_deinit_all_ios()
             if(type==GPIO_NOPULL){
                 /*note for HIGH_Z mode :                                */
                 /*analog input setup is recommmended for lowest power   */
-                /*consumptioin but actually not allowed by hal_gpio.c   */
+                /*consumption but actually not allowed by hal_gpio.c   */
                 highz_cfg.Pin = pin;
                 highz_cfg.Alternate = pin;
                 hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
             }else{
                 hal_gpio_init_in(pin, type);
             }
-
-
-
-
         }
     }
 }
 
-// Uart0 is UART1 in STM32 doc hence names of HAL defns
+/* Uart0 is UART1 in STM32 doc hence names of HAL defns */
 #if MYNEWT_VAL(UART_0)
 static struct uart_dev hal_uart0;
 
@@ -201,8 +193,8 @@ static const struct stm32_uart_cfg uart_cfg[UART_CNT] = {
         .suc_uart = USART1,      
         .suc_rcc_reg = &RCC->APB2ENR,
         .suc_rcc_dev = RCC_APB2ENR_USART1EN,
-        .suc_pin_tx = BSP_UART_0_TX, //ok
-        .suc_pin_rx = BSP_UART_0_RX, //ok
+        .suc_pin_tx = BSP_UART_0_TX,
+        .suc_pin_rx = BSP_UART_0_RX,
         .suc_pin_rts = -1,
         .suc_pin_cts = -1,
         .suc_pin_af = GPIO_AF7_USART1,
@@ -356,8 +348,7 @@ hal_bsp_init(void)
 #endif
 
 #if MYNEWT_VAL(UART_0)
-    rc = hal_bsp_uart_init(0);
-    assert(rc == 0);
+    hal_bsp_uart_init();
     rc = os_dev_create((struct os_dev *) &hal_uart0, UART0_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
     assert(rc == 0);    
@@ -469,8 +460,19 @@ int hal_bsp_spi_init(void) {
     rc = hal_spi_init(1, &spi1_cfg, HAL_SPI_TYPE_SLAVE);
     assert(rc == 0);
 #endif
-
     return 0;
+
+/*ANOTHER DEINIT METHOD */
+/*
+#if MYNEWT_VAL(SPI_0_MASTER) || MYNEWT_VAL(SPI_0_SLAVE)
+    hal_spi_enable(0);
+#endif
+
+#if MYNEWT_VAL(SPI_1_MASTER) || MYNEWT_VAL(SPI_1_SLAVE)
+    hal_spi_enable(1);
+#endif
+*/
+
 }
 
 int hal_bsp_spi_deinit(void){
@@ -515,7 +517,6 @@ int hal_bsp_spi_deinit(void){
     hal_gpio_init_in(spi1_cfg.mosi_pin, HAL_GPIO_PULL_DOWN);
 
 #endif
-
     return 0;
 }
 
@@ -900,58 +901,44 @@ int hal_bsp_i2s_read(uint16_t *data)
 #endif //I2S
 
 
-int hal_bsp_uart_init(int num)
+void hal_bsp_uart_init(void)
 {
 #if MYNEWT_VAL(UART_0)
+    __HAL_RCC_USART1_RELEASE_RESET( );
+    __HAL_RCC_USART1_RELEASE_RESET( );
+    __HAL_RCC_USART1_CLK_ENABLE( );
 
-    assert((num+1) <= NELEMS(uart_cfg));
-
-    if(num==0)
-    {
-        __HAL_RCC_USART1_RELEASE_RESET( );
-        __HAL_RCC_USART1_RELEASE_RESET( );
-        __HAL_RCC_USART1_CLK_ENABLE( );
-
-        hal_gpio_deinit(uart_cfg[num].suc_pin_tx);
-        hal_gpio_init_af(uart_cfg[num].suc_pin_tx, uart_cfg[num].suc_pin_af, 0, 0);
-        
-        hal_gpio_deinit(uart_cfg[num].suc_pin_rx);
-        hal_gpio_init_af(uart_cfg[num].suc_pin_rx, uart_cfg[num].suc_pin_af, 0, 0);
-
-        return 0;
-    }
+    hal_gpio_deinit(uart_cfg[0].suc_pin_tx);
+    hal_gpio_init_af(uart_cfg[0].suc_pin_tx, uart_cfg[0].suc_pin_af, 0, 0);
+    
+    hal_gpio_deinit(uart_cfg[0].suc_pin_rx);
+    hal_gpio_init_af(uart_cfg[0].suc_pin_rx, uart_cfg[0].suc_pin_af, 0, 0);
 #endif
-    return -1;
 }
 
 
-// Uart0 is UART1 in STM32 doc hence names of HAL defns
-void hal_bsp_uart_deinit(int num)
+void hal_bsp_uart_deinit(void)
 {
 #if MYNEWT_VAL(UART_0)
+    // Uart0 is UART1 in STM32 doc hence names of HAL defns
     GPIO_InitTypeDef highz_cfg = {
         .Mode = GPIO_MODE_ANALOG,
         .Pull = GPIO_NOPULL
     };
 
-    assert((num+1) <= NELEMS(uart_cfg));
+    __HAL_RCC_USART1_FORCE_RESET( );
+    __HAL_RCC_USART1_RELEASE_RESET( );
+    __HAL_RCC_USART1_CLK_DISABLE( );
 
-    if(num == 0)
-    {
-        __HAL_RCC_USART1_FORCE_RESET( );
-        __HAL_RCC_USART1_RELEASE_RESET( );
-        __HAL_RCC_USART1_CLK_DISABLE( );
-
-        hal_gpio_deinit(uart_cfg[num].suc_pin_tx);
-        highz_cfg.Pin = uart_cfg[num].suc_pin_tx;
-        highz_cfg.Alternate = uart_cfg[num].suc_pin_tx;
-        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
-        
-        hal_gpio_deinit(uart_cfg[num].suc_pin_rx);
-        highz_cfg.Pin = uart_cfg[num].suc_pin_rx;
-        highz_cfg.Alternate = uart_cfg[num].suc_pin_rx;
-        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
-    }
+    hal_gpio_deinit(uart_cfg[0].suc_pin_tx);
+    highz_cfg.Pin = uart_cfg[0].suc_pin_tx;
+    highz_cfg.Alternate = uart_cfg[0].suc_pin_tx;
+    hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    
+    hal_gpio_deinit(uart_cfg[0].suc_pin_rx);
+    highz_cfg.Pin = uart_cfg[0].suc_pin_rx;
+    highz_cfg.Alternate = uart_cfg[0].suc_pin_rx;
+    hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
 #endif //MYNEWT_VAL(UART_0)
 }
 
@@ -1005,6 +992,7 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
         
         case HAL_BSP_POWER_OFF:
         case HAL_BSP_POWER_DEEP_SLEEP:
+        case HAL_BSP_POWER_SLEEP:
             /* I2S */
             bsp_deinit_i2s();
 
@@ -1014,11 +1002,10 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
             /* SPI */
             hal_bsp_spi_deinit();
 
-            /*UART0 */
-            hal_bsp_uart_deinit(0);
-            
+            /*UART */
+            hal_bsp_uart_deinit();
 
-        case HAL_BSP_POWER_SLEEP:
+            break;
         case HAL_BSP_POWER_WFI: 
 
         case HAL_BSP_POWER_ON:
@@ -1042,22 +1029,20 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
         
         case HAL_BSP_POWER_OFF:
         case HAL_BSP_POWER_DEEP_SLEEP:
+        case HAL_BSP_POWER_SLEEP:
             /* I2S */
             bsp_init_i2s();
 
             /* I2C */
             hal_bsp_init_i2c();
 
-            /* ADC */
-            hal_bsp_adc_init();
-
             /* SPI */
             hal_bsp_spi_init();
 
-            /*UART0 */
-            hal_bsp_uart_init(0);
-                
-        case HAL_BSP_POWER_SLEEP:
+            /*UART */
+            hal_bsp_uart_init();
+
+            break;
         case HAL_BSP_POWER_WFI: 
 
         case HAL_BSP_POWER_ON:
