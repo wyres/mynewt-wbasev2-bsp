@@ -94,8 +94,10 @@ extern "C" {
 #define BSP_UART_0_TX MCU_GPIO_PORTA(9)             // No ADC
 #define BSP_UART_0_RX MCU_GPIO_PORTA(10)            // No ADC
 
+// Bitbang TX only
 #define BSP_UART_1_TX MCU_GPIO_PORTA(2)            // No ADC
 
+// non-used UART
 #define BSP_UART_2_TX MCU_GPIO_PORTB(10)             // No ADC
 #define BSP_UART_2_RX MCU_GPIO_PORTB(11)            // No ADC
 
@@ -104,6 +106,9 @@ extern "C" {
 #define BSP_UART_DBG_RX MYNEWT_VAL(UART_DBG_RX)
 
 #define SX_PWR_ENABLE MCU_GPIO_PORTB(0)
+// I2S2 Pins
+#define MICROPHONE_I2S2_SD_PIN   MCU_GPIO_PORTB(15)
+#define MICROPHONE_I2S2_CLK_PIN  MCU_GPIO_PORTB(13)
 
 #define LSE_VALUE    (32768U)
 
