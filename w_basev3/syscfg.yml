@@ -70,6 +70,7 @@ syscfg.defs:
     ADC:
         description: "ADC use actived (including battery check)"
         value: 1
+
     ADC_DEV:
         description: "name of adc mynewt device : currently not used as no mynewt driver for adc for STM32L1"
         value: 'ADC'
@@ -77,9 +78,14 @@ syscfg.defs:
     UART_DBG:
         description: 'UART dedicated for debug logs enabled (uses bitbang on gpio pin)'
         value:  0
+
     UART_DBG_BAUD:
         description: "baud rate for debug (must be less than or equal to 19200)"    
         value: 19200
+
+    I2S:
+        description:  'used for connecting digital audio devices (mic) together'
+        value:  0
 
     BSP_HW_REV:
         description: "version of base card: 1=revB, 2=revC, 3=revD"
@@ -96,17 +102,43 @@ syscfg.defs:
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
     REBOOT_LOG_FLASH_AREA: FLASH_AREA_REBOOT_LOG
-    CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
+#    CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
-    COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
+#    COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
     # timer for OS to use by default in the BSP : Timer0
     OS_CPUTIME_TIMER_NUM: 0
 
     # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
-    OS_IDLE_TICKLESS_MS_MIN: 10
+    OS_IDLE_TICKLESS_MS_MIN: 1000
     OS_IDLE_TICKLESS_MS_MAX: 600000
+    # main stack size- reasonable as we use it for event execution for certain mgrs (uart etc)
+    OS_MAIN_STACK_SIZE: 512
+    # idle stack size increase as lowpower sleep callbacks called on it
+    OS_IDLE_STACK_SIZE: 128
 
     OS_CRASH_RESTORE_REGS: 1
+    
+    
+    #system clock config with HSE (XTAL@16MHz)
+    STM32_CLOCK_VOLTAGESCALING_CONFIG: 'PWR_REGULATOR_VOLTAGE_SCALE1'
+    STM32_CLOCK_LSI: 0
+    STM32_CLOCK_LSE: 1
+    STM32_CLOCK_LSE_BYPASS: 0
+    STM32_CLOCK_MSI: 0
+    STM32_CLOCK_MSI_CALIBRATION: 0
+    STM32_CLOCK_MSI_CLOCK_RANGE: 'RCC_MSIRANGE_5'  # 2.097MHz
+    STM32_CLOCK_HSI: 1
+    STM32_CLOCK_HSI_CALIBRATION: 16
+    STM32_CLOCK_HSE: 0
+    STM32_CLOCK_HSE_BYPASS: 0
+    STM32_CLOCK_PLL_MUL: 'RCC_PLL_MUL6'  # HSE : 16 * 4 = 64MHz; 
+    STM32_CLOCK_PLL_DIV: 'RCC_PLL_DIV3'  # HSE : 64 / 2 = 32MHz;
+    STM32_CLOCK_AHB_DIVIDER: 'RCC_SYSCLK_DIV1'
+    STM32_CLOCK_APB1_DIVIDER: 'RCC_HCLK_DIV1'
+    STM32_CLOCK_APB2_DIVIDER: 'RCC_HCLK_DIV1'
+    STM32_FLASH_LATENCY: 1  # max 32MHz
+    STM32_FLASH_PREFETCH_ENABLE: 0
+    
     
     # enable I2C0 (STM32 doc I2C1)
     I2C_0: 1
@@ -116,6 +148,7 @@ syscfg.vals:
     SPI_0_MASTER: 1
     SPI_1_MASTER: 0
 
+    I2S : 1
     # W_BASE v2 card hardware
 #    LED1 : PA_0
 #    LED2 : PA_15
@@ -136,8 +169,9 @@ syscfg.vals:
 
     # W_BASE v3 uses SX126X
     SX1262: 1
-    SX1262_XTAL_PINA: 0x1B
-    SX1262_XTAL_PINB: 0x1B
+    
+    SX126X_XTAL_PINA: 0x1B
+    SX126X_XTAL_PINB: 0x1B
  
     SX126X_DIO_1: MCU_GPIO_PORTB(1)
     SX126X_RADIO_BUSY: MCU_GPIO_PORTB(7)
@@ -149,6 +183,6 @@ syscfg.vals:
     
     # antenna rx/tx switch management is independant of the radio type 
     # code to manipulate these IO is in the BSP v2
-    #RADIO_ANT_SWITCH_TX: 0
-    #RADIO_ANT_SWITCH_RX: 0
+    RADIO_ANT_SWITCH_TX: -1
+    RADIO_ANT_SWITCH_RX: -1
 
