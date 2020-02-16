@@ -108,13 +108,14 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = SPI_0_MASTER_PIN_MISO, 						.idle_type = GPIO_NOPULL	},
     { .pin = SPI_0_MASTER_PIN_MOSI, 						.idle_type = GPIO_NOPULL	},
     
-    { .pin = SX1272_DIO_0, 									.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_DIO_1, 									.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_DIO_2, 									.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_DIO_3, 									.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_DIO_4, 									.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_DIO_5, 									.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_RESET, 									.idle_type = GPIO_PULLUP	},
+    { .pin = SX1262_DIO_0, 									.idle_type = GPIO_NOPULL	},
+/*    { .pin = SX1262_DIO_1, 									.idle_type = GPIO_NOPULL	},
+    { .pin = SX1262_DIO_2, 									.idle_type = GPIO_NOPULL	},
+    { .pin = SX1262_DIO_3, 									.idle_type = GPIO_NOPULL	},
+    { .pin = SX1262_DIO_4, 									.idle_type = GPIO_NOPULL	},
+    { .pin = SX1262_DIO_5, 									.idle_type = GPIO_NOPULL	},
+*/
+    { .pin = SX1262_RESET, 									.idle_type = GPIO_PULLUP	},
     { .pin = ANTENNA_SWITCH_TX, 							.idle_type = GPIO_NOPULL	},
     { .pin = ANTENNA_SWITCH_RX, 							.idle_type = GPIO_NOPULL	},
 

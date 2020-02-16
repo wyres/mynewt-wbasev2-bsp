@@ -110,6 +110,14 @@ extern "C" {
 #define MICROPHONE_I2S2_SD_PIN   MCU_GPIO_PORTB(15)
 #define MICROPHONE_I2S2_CLK_PIN  MCU_GPIO_PORTB(13)
 
+// TODO : remettre a niveau
+#define SX1262_DIO_0    0
+#define SX1262_RESET 0
+#define ANTENNA_SWITCH_TX 0
+#define ANTENNA_SWITCH_RX 0
+#define SPI_1_MASTER_PIN_MISO 0
+#define SPI_1_MASTER_PIN_CS 0
+
 #define LSE_VALUE    (32768U)
 
 #ifdef __cplusplus
