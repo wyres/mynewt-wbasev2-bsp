@@ -131,7 +131,12 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = SWD_DIO, 										.idle_type = GPIO_PULLDOWN 	},
 #endif
  
+    { .pin = HSE_IN, 										.idle_type = GPIO_NOPULL 	},
+    { .pin = HSE_OUT, 										.idle_type = GPIO_NOPULL 	},
+ 
     /*TODO : test it */
+    { .pin = LSE_IN, 										.idle_type = GPIO_PULLDOWN 	},
+    { .pin = LSE_OUT, 										.idle_type = GPIO_PULLDOWN 	},
 };
 
 
