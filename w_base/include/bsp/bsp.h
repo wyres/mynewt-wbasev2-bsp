@@ -77,6 +77,11 @@ int bsp_init_i2s();
 int bsp_deinit_i2s();
 int hal_bsp_i2s_read(uint16_t *data);
 
+void hal_bsp_uart_init(void);
+void hal_bsp_uart_deinit(void);
+
+void bsp_deinit_all_ios(void);
+
 // Halt board and MCU in lowest power mode possible. Never returns
 void hal_bsp_halt();
 

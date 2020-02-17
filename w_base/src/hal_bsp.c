@@ -84,7 +84,6 @@
 // Should be in header file??
 extern void hal_mcu_halt();  
 extern int hal_gpio_init_stm(int pin, GPIO_InitTypeDef *cfg);
-void hal_bsp_uart_init(void);
 
 /*
 *   Array with all idle/default gpio mode 
@@ -98,13 +97,7 @@ typedef struct
 }w_base_v2_pins_t;
 
 static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
-{
-    
-    { .pin = SPI_0_MASTER_PIN_NSS, 							.idle_type = GPIO_PULLUP	},
-    { .pin = SPI_0_MASTER_PIN_SCK, 							.idle_type = GPIO_NOPULL	},
-    { .pin = SPI_0_MASTER_PIN_MISO, 						.idle_type = GPIO_NOPULL	},
-    { .pin = SPI_0_MASTER_PIN_MOSI, 						.idle_type = GPIO_NOPULL	},
-    
+{    
     { .pin = SX1272_DIO_0, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_1, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_2, 									.idle_type = GPIO_NOPULL	},
@@ -117,17 +110,11 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 
     { .pin = LED_1, 										.idle_type = GPIO_PULLDOWN	},
     { .pin = LED_2, 										.idle_type = GPIO_PULLDOWN	},
-    
-    { .pin = BSP_UART_0_TX, 								.idle_type = GPIO_NOPULL	},
-    { .pin = BSP_UART_0_RX, 								.idle_type = GPIO_NOPULL	},
+ 
     { .pin = EXT_UART_PWR, 									.idle_type = GPIO_PULLUP	},
  
-    { .pin = I2C_0_SDA, 									.idle_type = GPIO_NOPULL	},
-    { .pin = I2C_0_SCL, 									.idle_type = GPIO_NOPULL    },
     { .pin = EXT_I2C_PWR, 									.idle_type = GPIO_PULLUP	},
 
-    { .pin = MICROPHONE_I2S2_SD_PIN, 						.idle_type = GPIO_PULLDOWN	},
-    { .pin = MICROPHONE_I2S2_CLK_PIN, 						.idle_type = GPIO_PULLDOWN	},
     { .pin = LIGHT_SENSOR, 									.idle_type = GPIO_PULLDOWN	},
     { .pin = SPEAKER, 										.idle_type = GPIO_PULLUP	},
     /*WARNING : SENSOR_PWR still drains current even in INPUT.PULL_DOWN mode. This pin  */
@@ -139,7 +126,7 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = SPI_1_MASTER_PIN_MISO,							.idle_type = GPIO_PULLDOWN	},
     { .pin = SPI_1_MASTER_PIN_CS,							.idle_type = GPIO_PULLDOWN	},
 
-#if MYNEWT_VAL(BUILD_RELEASE)
+#if 0//MYNEWT_VAL(BUILD_RELEASE)
     { .pin = SWD_CLK, 										.idle_type = GPIO_PULLDOWN 	},
     { .pin = SWD_DIO, 										.idle_type = GPIO_PULLDOWN 	},
 #endif
@@ -161,6 +148,18 @@ void bsp_deinit_all_ios()
         .Mode = GPIO_MODE_ANALOG,
         .Pull = GPIO_NOPULL
     };
+
+    /* I2S */
+    bsp_deinit_i2s();
+
+    /* I2C */
+    hal_bsp_deinit_i2c();
+
+    /* SPI */
+    hal_bsp_spi_deinit();
+
+    /*UART */
+    hal_bsp_uart_deinit();
     
     for(i=0; i<NELEMS(W_BASE_V2_PINS_IDLE); i++){
 
@@ -329,6 +328,7 @@ hal_bsp_init(void)
 
     (void)rc;
 
+    /*GPIOs & interfaces*/
     bsp_deinit_all_ios();
 
 #if MYNEWT_VAL(I2C_0) || MYNEWT_VAL(RTC) || MYNEWT_VAL(RNG)
@@ -348,7 +348,7 @@ hal_bsp_init(void)
 #endif
 
 #if MYNEWT_VAL(UART_0)
-    hal_bsp_uart_init();
+    //hal_bsp_uart_init();
     rc = os_dev_create((struct os_dev *) &hal_uart0, UART0_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
     assert(rc == 0);    
@@ -558,15 +558,20 @@ int hal_bsp_init_i2c() {
 int hal_bsp_deinit_i2c() {
     
 #if MYNEWT_VAL(I2C_0)
+
     __HAL_RCC_I2C1_FORCE_RESET();
     __HAL_RCC_I2C1_RELEASE_RESET();
     __HAL_RCC_I2C1_CLK_DISABLE( );
 
+#if 0
+    /*deinit is not done properly because of this : */
     hal_gpio_deinit(i2c0_cfg.hic_pin_sda);
     hal_gpio_init_in(i2c0_cfg.hic_pin_sda, HAL_GPIO_PULL_UP);
     
     hal_gpio_deinit(i2c0_cfg.hic_pin_scl);
    	hal_gpio_init_in(i2c0_cfg.hic_pin_scl, HAL_GPIO_PULL_UP);    
+#endif
+
 #endif
     return 0;
 }
@@ -746,6 +751,14 @@ bool hal_bsp_adc_init() {
     if (!_adc1.active) {
         // Configure ADC
         ADC_HandleTypeDef* adch = &_adc1.adcHandle;
+
+#if MYNEWT_VAL(STM32_CLOCK_HSE)
+        // Enable HSI - already done in clock setup
+        __HAL_RCC_HSI_ENABLE( );
+
+        // Wait till HSI is ready
+        while( __HAL_RCC_GET_FLAG( RCC_FLAG_HSIRDY ) == RESET );
+#endif
         __HAL_RCC_ADC1_CLK_ENABLE( );
         // First ensure its is in known state (seems odd but if you don't do this then the init fails)
         HAL_ADC_DeInit( adch );
@@ -765,15 +778,7 @@ bool hal_bsp_adc_init() {
         if (rc!=HAL_OK) {
             return false;   // thats a fail
         }
-        // Enable HSI - already done in clock setup
-        /* 
-        __HAL_RCC_HSI_ENABLE( );
-
-        // Wait till HSI is ready
-        while( __HAL_RCC_GET_FLAG( RCC_FLAG_HSIRDY ) == RESET )
-        {
-        }
-        */
+        
         // Enable ADC1
         __HAL_ADC_ENABLE( adch );
 
@@ -825,6 +830,7 @@ int hal_bsp_adc_read(int channel) {
     HAL_ADC_PollForConversion(adch, HAL_MAX_DELAY);
 
     adcData = HAL_ADC_GetValue(adch);
+    
     return (uint16_t)adcData;
 }
 
@@ -844,8 +850,10 @@ void hal_bsp_adc_deinit() {
         // Stop its clock
         __HAL_RCC_ADC1_CLK_DISABLE( );
 
+#if MYNEWT_VAL(STM32_CLOCK_HSE)
         // Disable HSI - no, required for system clock
-//        __HAL_RCC_HSI_DISABLE( );
+        __HAL_RCC_HSI_DISABLE( );
+#endif
 
         HAL_ADC_DeInit( adch );
         _adc1.active = false;
@@ -1033,7 +1041,7 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
             /* I2S */
             bsp_init_i2s();
 
-            /* I2C */
+            /* I2C */         
             hal_bsp_init_i2c();
 
             /* SPI */
@@ -1060,10 +1068,10 @@ void hal_bsp_power_hooks(LP_HOOK_t getMode, LP_HOOK_t enter, LP_HOOK_t exit) {
 int hal_bsp_power_handler_get_mode(os_time_t ticks) {
     return HAL_BSP_POWER_WFI;
 }
-void hal_bsp_power_handler_sleep_enter() {
+void hal_bsp_power_handler_sleep_enter(int nextMode){
 
 }
-void hal_bsp_power_handler_sleep_exit(void) {
+void hal_bsp_power_handler_sleep_exit(int lastMode){
     
 }
 

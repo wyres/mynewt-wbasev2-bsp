@@ -562,7 +562,7 @@ bool hal_bsp_adc_init() {
             return false;   // thats a fail
         }
         // Enable HSI - already done in clock setup
-        /* 
+         /*
         __HAL_RCC_HSI_ENABLE( );
 
         // Wait till HSI is ready
