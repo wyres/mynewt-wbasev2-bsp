@@ -130,12 +130,8 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = SWD_CLK, 										.idle_type = GPIO_PULLDOWN 	},
     { .pin = SWD_DIO, 										.idle_type = GPIO_PULLDOWN 	},
 #endif
-    { .pin = HSE_IN, 										.idle_type = GPIO_NOPULL 	},
-    { .pin = HSE_OUT, 										.idle_type = GPIO_NOPULL 	},
  
     /*TODO : test it */
-    { .pin = LSE_IN, 										.idle_type = GPIO_PULLDOWN 	},
-    { .pin = LSE_OUT, 										.idle_type = GPIO_PULLDOWN 	},
 };
 
 
@@ -348,7 +344,7 @@ hal_bsp_init(void)
 #endif
 
 #if MYNEWT_VAL(UART_0)
-    //hal_bsp_uart_init();
+// BW    hal_bsp_uart_init();
     rc = os_dev_create((struct os_dev *) &hal_uart0, UART0_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
     assert(rc == 0);    

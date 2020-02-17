@@ -117,7 +117,7 @@ syscfg.vals:
 
     OS_CRASH_RESTORE_REGS: 1
 
-    #system clock config with HSE (XTAL@16MHz)
+    #system clock config with HSE (XTAL@16MHz, configured in stm32l1xx_hal_conf.h in the BSP)
     STM32_CLOCK_VOLTAGESCALING_CONFIG: 'PWR_REGULATOR_VOLTAGE_SCALE1'
     STM32_CLOCK_LSI: 0
     STM32_CLOCK_LSE: 1
@@ -145,7 +145,6 @@ syscfg.vals:
     SPI_0_MASTER: 1
     SPI_1_MASTER: 0
 
-    I2S : 1
     # W_BASE v2 card hardware
 #    LED1 : PA_0
 #    LED2 : PA_15
