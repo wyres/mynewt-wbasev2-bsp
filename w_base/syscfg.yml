@@ -179,3 +179,14 @@ syscfg.vals:
     RADIO_ANT_SWITCH_TX: MCU_GPIO_PORTA(4)  #PA_4
     RADIO_ANT_SWITCH_RX: MCU_GPIO_PORTC(13) #PC_13
     
+    # if enabled tickless mode, disable timer0 and uart dbg
+syscfg.vals.OS_TICKLESS_RTC:
+    OS_CPUTIME_TIMER_NUM: -1
+    TIMER_0 : 0
+    UART_DBG : 0
+
+    # if enabled debug uart, cannot use tickless mode (as the bitbang uart timer is too disturbing), and need the cputime timer
+syscfg.vals.UART_DBG:
+    OS_TICKLESS_RTC: 0
+    OS_CPUTIME_TIMER_NUM: 0
+    TIMER_0 : 1
