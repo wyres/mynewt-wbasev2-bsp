@@ -157,7 +157,7 @@ void bsp_deinit_all_ios()
     hal_bsp_deinit_i2c();
 
     /* SPI */
-    hal_bsp_spi_deinit();
+    hal_bsp_deinit_spi();
 
     /*UART */
     hal_bsp_uart_deinit();
@@ -387,13 +387,9 @@ hal_bsp_init(void)
     */
 #endif
 
-#if MYNEWT_VAL(SPI_0_MASTER) || MYNEWT_VAL(SPI_1_MASTER) || MYNEWT_VAL(SPI_0_SLAVE) || MYNEWT_VAL(SPI_1_SLAVE)
-    rc = hal_bsp_spi_init();
+    rc = hal_bsp_init_spi();
     assert(rc ==0);
-#endif
 
-// Note I2C0 is I2C1 in STM32 doc
-#if MYNEWT_VAL(I2C_0)
     rc = hal_bsp_init_i2c();
     assert(rc ==0);
     // only init i2c here if using bus driver - else the i2c is init/deinit() on each usage
@@ -411,7 +407,6 @@ hal_bsp_init(void)
                     &cfg_acc, &(cfg_acc.node_cfg));
     assert(rc == 0);
 #endif /* USE_BUS_I2C */
-#endif
 
 #if MYNEWT_VAL(I2S)
     rc = bsp_init_i2s();
@@ -435,10 +430,9 @@ hal_bsp_get_nvic_priority(int irq_num, uint32_t pri)
     return pri;
 }
 
-#if MYNEWT_VAL(SPI_0_MASTER) || MYNEWT_VAL(SPI_1_MASTER) || MYNEWT_VAL(SPI_0_SLAVE) || MYNEWT_VAL(SPI_1_SLAVE)
-int hal_bsp_spi_init(void) {
+int hal_bsp_init_spi(void) {
 
-    int rc;
+    int rc=0;
 
 // note : SPI0 is SPI1 in STM32 doc
 #if MYNEWT_VAL(SPI_0_MASTER)
@@ -461,7 +455,7 @@ int hal_bsp_spi_init(void) {
     rc = hal_spi_init(1, &spi1_cfg, HAL_SPI_TYPE_SLAVE);
     assert(rc == 0);
 #endif
-    return 0;
+    return rc;
 
 /*ANOTHER DEINIT METHOD */
 /*
@@ -476,7 +470,7 @@ int hal_bsp_spi_init(void) {
 
 }
 
-int hal_bsp_spi_deinit(void){
+int hal_bsp_deinit_spi(void){
 
 // note : SPI0 is SPI1 in STM32 doc
 #if MYNEWT_VAL(SPI_0_SLAVE) || MYNEWT_VAL(SPI_0_MASTER)
@@ -521,10 +515,6 @@ int hal_bsp_spi_deinit(void){
     return 0;
 }
 
-#endif
-
-
-#if MYNEWT_VAL(I2C_0) || MYNEWT_VAL(I2C_1) || MYNEWT_VAL(I2C_2)
 #if MYNEWT_VAL(USE_BUS_I2C)
 // need these as STM32 MCU HAL code does NOT define them, and the I2C mynewt driver code requires them
 int hal_i2c_disable(uint8_t n) {
@@ -576,7 +566,6 @@ int hal_bsp_deinit_i2c() {
 #endif
     return 0;
 }
-#endif
 
 #if MYNEWT_VAL(I2S)
 
@@ -1009,7 +998,7 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
             hal_bsp_deinit_i2c();
 
             /* SPI */
-            hal_bsp_spi_deinit();
+            hal_bsp_deinit_spi();
 
             /*UART */
             hal_bsp_uart_deinit();
@@ -1046,7 +1035,7 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
             hal_bsp_init_i2c();
 
             /* SPI */
-            hal_bsp_spi_init();
+            hal_bsp_init_spi();
 
             /*UART */
             hal_bsp_uart_init();
