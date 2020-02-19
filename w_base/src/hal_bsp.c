@@ -135,8 +135,8 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = HSE_OUT, 										.idle_type = GPIO_NOPULL 	},
  
     /*TODO : test it */
-    { .pin = LSE_IN, 										.idle_type = GPIO_PULLDOWN 	},
-    { .pin = LSE_OUT, 										.idle_type = GPIO_PULLDOWN 	},
+    /*{ .pin = LSE_IN, 										.idle_type = GPIO_PULLDOWN 	},      */
+    /*{ .pin = LSE_OUT, 										.idle_type = GPIO_PULLDOWN 	},  */
 };
 
 
@@ -331,22 +331,7 @@ hal_bsp_init(void)
 
     /*GPIOs & interfaces*/
     bsp_deinit_all_ios();
-
-#if MYNEWT_VAL(I2C_0) || MYNEWT_VAL(RTC) || MYNEWT_VAL(RNG)
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-
-#if MYNEWT_VAL(RTC)
-     __HAL_RCC_RTC_ENABLE( );
-
-     PeriphClkInit.PeriphClockSelection |= RCC_PERIPHCLK_RTC;
-     PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-#endif
-
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-    {
-        assert(0);
-    }
-#endif
+    
 
 #if MYNEWT_VAL(UART_0)
 // BW    hal_bsp_uart_init();
@@ -1002,6 +987,7 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
         case HAL_BSP_POWER_OFF:
         case HAL_BSP_POWER_DEEP_SLEEP:
         case HAL_BSP_POWER_SLEEP:
+          
             /* I2S */
             bsp_deinit_i2s();
 
@@ -1039,6 +1025,7 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
         case HAL_BSP_POWER_OFF:
         case HAL_BSP_POWER_DEEP_SLEEP:
         case HAL_BSP_POWER_SLEEP:
+     
             /* I2S */
             bsp_init_i2s();
 
