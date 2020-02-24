@@ -67,8 +67,8 @@ int hal_bsp_adc_read(int chan);
 void hal_bsp_adc_release(int pin, int chan);
 void hal_bsp_adc_deinit();
 
-int hal_bsp_spi_init(void);
-int hal_bsp_spi_deinit(void);
+int hal_bsp_init_spi(void);
+int hal_bsp_deinit_spi(void);
 
 int hal_bsp_init_i2c();
 int hal_bsp_deinit_i2c();
