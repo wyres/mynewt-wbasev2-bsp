@@ -92,11 +92,11 @@ syscfg.defs:
 
     BSP_POWER_SETUP:
         description: "allow or not the general power mode to be handled from mcu and bsp layers"
-        value: 0
+        value: 1
 
     OS_TICKLESS_RTC:
         description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
-        value: 0
+        value: 1
 
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:

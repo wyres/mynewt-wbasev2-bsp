@@ -121,7 +121,7 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     /*          must be in OUTPUT zero                                                  */
     /*{ .pin = SENSOR_PWR, 									.idle_type = GPIO_PULLDOWN 	},*/
 
-    { .pin = EXT_IO, 										.idle_type = GPIO_PULLDOWN	},
+    /*{ .pin = EXT_IO, 										.idle_type = GPIO_PULLDOWN	},*/
     { .pin = EXT_BUTTON, 									.idle_type = GPIO_PULLDOWN	},
     { .pin = SPI_1_MASTER_PIN_MISO,							.idle_type = GPIO_PULLDOWN	},
     { .pin = SPI_1_MASTER_PIN_CS,							.idle_type = GPIO_PULLDOWN	},
