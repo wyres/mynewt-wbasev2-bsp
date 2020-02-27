@@ -118,6 +118,20 @@ extern "C" {
 #define SPI_1_MASTER_PIN_MISO 0
 #define SPI_1_MASTER_PIN_CS 0
 
+
+
+
+
+
+#define SWD_CLK								MCU_GPIO_PORTA(14)
+#define SWD_DIO								MCU_GPIO_PORTA(13)
+
+#define HSE_IN		 						MCU_GPIO_PORTH(0)
+#define HSE_OUT								MCU_GPIO_PORTH(1)
+
+
+#define LSE_IN		 						MCU_GPIO_PORTC(14)
+#define LSE_OUT								MCU_GPIO_PORTC(15)
 #define LSE_VALUE    (32768U)
 
 #ifdef __cplusplus

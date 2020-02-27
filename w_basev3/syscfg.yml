@@ -127,12 +127,12 @@ syscfg.vals:
     STM32_CLOCK_MSI: 0
     STM32_CLOCK_MSI_CALIBRATION: 0
     STM32_CLOCK_MSI_CLOCK_RANGE: 'RCC_MSIRANGE_5'  # 2.097MHz
-    STM32_CLOCK_HSI: 1
+    STM32_CLOCK_HSI: 0
     STM32_CLOCK_HSI_CALIBRATION: 16
-    STM32_CLOCK_HSE: 0
+    STM32_CLOCK_HSE: 1
     STM32_CLOCK_HSE_BYPASS: 0
-    STM32_CLOCK_PLL_MUL: 'RCC_PLL_MUL6'  # HSE : 16 * 4 = 64MHz; 
-    STM32_CLOCK_PLL_DIV: 'RCC_PLL_DIV3'  # HSE : 64 / 2 = 32MHz;
+    STM32_CLOCK_PLL_MUL: 'RCC_PLL_MUL4'  # HSE : 16 * 4 = 64MHz; 
+    STM32_CLOCK_PLL_DIV: 'RCC_PLL_DIV2'  # HSE : 64 / 2 = 32MHz;
     STM32_CLOCK_AHB_DIVIDER: 'RCC_SYSCLK_DIV1'
     STM32_CLOCK_APB1_DIVIDER: 'RCC_HCLK_DIV1'
     STM32_CLOCK_APB2_DIVIDER: 'RCC_HCLK_DIV1'
@@ -148,7 +148,6 @@ syscfg.vals:
     SPI_0_MASTER: 1
     SPI_1_MASTER: 0
 
-    I2S : 1
     # W_BASE v2 card hardware
 #    LED1 : PA_0
 #    LED2 : PA_15
@@ -186,3 +185,15 @@ syscfg.vals:
     RADIO_ANT_SWITCH_TX: -1
     RADIO_ANT_SWITCH_RX: -1
 
+  
+    # if enabled tickless mode, disable timer0 and uart dbg
+syscfg.vals.OS_TICKLESS_RTC:
+    OS_CPUTIME_TIMER_NUM: -1
+    TIMER_0 : 0
+    UART_DBG : 0
+
+    # if enabled debug uart, cannot use tickless mode (as the bitbang uart timer is too disturbing), and need the cputime timer
+syscfg.vals.UART_DBG:
+    OS_TICKLESS_RTC: 0
+    OS_CPUTIME_TIMER_NUM: 0
+    TIMER_0 : 1
