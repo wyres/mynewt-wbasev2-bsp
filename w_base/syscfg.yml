@@ -92,11 +92,11 @@ syscfg.defs:
 
     BSP_POWER_SETUP:
         description: "allow or not the general power mode to be handled from mcu and bsp layers"
-        value: 0
+        value: 1
 
     OS_TICKLESS_RTC:
         description: "use tickless mode when sleeping with the RTC to wakeup. Requires MCU RTC support."
-        value: 0
+        value: 1
 
     # overwrite/set module required card specific hardware mappings
 syscfg.vals:
@@ -108,7 +108,7 @@ syscfg.vals:
     OS_CPUTIME_TIMER_NUM: 0
 
     # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
-    OS_IDLE_TICKLESS_MS_MIN: 1000
+    OS_IDLE_TICKLESS_MS_MIN: 100
     OS_IDLE_TICKLESS_MS_MAX: 600000
     # main stack size- reasonable as we use it for event execution for certain mgrs (uart etc)
     OS_MAIN_STACK_SIZE: 512
@@ -182,11 +182,9 @@ syscfg.vals:
     # if enabled tickless mode, disable timer0 and uart dbg
 syscfg.vals.OS_TICKLESS_RTC:
     OS_CPUTIME_TIMER_NUM: -1
-    TIMER_0 : 0
     UART_DBG : 0
 
     # if enabled debug uart, cannot use tickless mode (as the bitbang uart timer is too disturbing), and need the cputime timer
 syscfg.vals.UART_DBG:
     OS_TICKLESS_RTC: 0
     OS_CPUTIME_TIMER_NUM: 0
-    TIMER_0 : 1
