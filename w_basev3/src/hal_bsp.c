@@ -98,13 +98,13 @@ typedef struct
 
 static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 {    
-    { .pin = SX1262_DIO_0, 									.idle_type = GPIO_NOPULL	},
+    { .pin = SX1262_PIN_DIO_0, 									.idle_type = GPIO_NOPULL	},
     /*{ .pin = SX122_DIO_1, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_2, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_3, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_4, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_5, 									.idle_type = GPIO_NOPULL	},*/
-    { .pin = SX1262_RESET, 									.idle_type = GPIO_PULLUP	},
+    { .pin = SX1262_PIN_RESET, 									.idle_type = GPIO_PULLUP	},
     { .pin = ANTENNA_SWITCH_TX, 							.idle_type = GPIO_NOPULL	},
     { .pin = ANTENNA_SWITCH_RX, 							.idle_type = GPIO_NOPULL	},
 
@@ -123,8 +123,8 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 
     { .pin = EXT_IO, 										.idle_type = GPIO_PULLDOWN	},
     { .pin = EXT_BUTTON, 									.idle_type = GPIO_PULLDOWN	},
-    { .pin = SPI_1_MASTER_PIN_MISO,							.idle_type = GPIO_PULLDOWN	},
-    { .pin = SPI_1_MASTER_PIN_CS,							.idle_type = GPIO_PULLDOWN	},
+    { .pin = MYNEWT_VAL(SPI_1_PIN_MISO),					.idle_type = GPIO_PULLDOWN	},
+    { .pin = MYNEWT_VAL(SPI_1_PIN_SS),		    			.idle_type = GPIO_PULLDOWN	},
 
 #if 0//MYNEWT_VAL(BUILD_RELEASE)
     { .pin = SWD_CLK, 										.idle_type = GPIO_PULLDOWN 	},
@@ -188,18 +188,46 @@ void bsp_deinit_all_ios()
 #if MYNEWT_VAL(UART_0)
 static struct uart_dev hal_uart0;
 
-static const struct stm32_uart_cfg uart_cfg[UART_CNT] = {
-    [0] = {
+static const struct stm32_uart_cfg os_bsp_uart0_cfg = {
         .suc_uart = USART1,      
         .suc_rcc_reg = &RCC->APB2ENR,
         .suc_rcc_dev = RCC_APB2ENR_USART1EN,
-        .suc_pin_tx = BSP_UART_0_TX,
-        .suc_pin_rx = BSP_UART_0_RX,
-        .suc_pin_rts = -1,
-        .suc_pin_cts = -1,
+        .suc_pin_tx = MYNEWT_VAL(UART_0_PIN_TX),
+        .suc_pin_rx = MYNEWT_VAL(UART_0_PIN_RX),
+        .suc_pin_rts = MYNEWT_VAL(UART_0_PIN_RTS),
+        .suc_pin_cts = MYNEWT_VAL(UART_0_PIN_CTS),
         .suc_pin_af = GPIO_AF7_USART1,
         .suc_irqn = USART1_IRQn
-    }
+};
+#endif
+#if MYNEWT_VAL(UART_1)
+static struct uart_dev hal_uart1;
+
+static const struct stm32_uart_cfg os_bsp_uart1_cfg = {
+        .suc_uart = USART2,      
+        .suc_rcc_reg = &RCC->APB1ENR,
+        .suc_rcc_dev = RCC_APB1ENR_USART2EN,
+        .suc_pin_tx = MYNEWT_VAL(UART_1_PIN_TX),
+        .suc_pin_rx = MYNEWT_VAL(UART_1_PIN_RX),
+        .suc_pin_rts = MYNEWT_VAL(UART_1_PIN_RTS),
+        .suc_pin_cts = MYNEWT_VAL(UART_1_PIN_CTS),
+        .suc_pin_af = GPIO_AF7_USART2,
+        .suc_irqn = USART2_IRQn
+};
+#endif
+#if MYNEWT_VAL(UART_2)
+static struct uart_dev hal_uart2;
+
+static const struct stm32_uart_cfg os_bsp_uart2_cfg = {
+        .suc_uart = USART3,      
+        .suc_rcc_reg = &RCC->APB1ENR,
+        .suc_rcc_dev = RCC_APB1ENR_USART3EN,
+        .suc_pin_tx = MYNEWT_VAL(UART_2_PIN_TX),
+        .suc_pin_rx = MYNEWT_VAL(UART_2_PIN_RX),
+        .suc_pin_rts = MYNEWT_VAL(UART_2_PIN_RTS),
+        .suc_pin_cts = MYNEWT_VAL(UART_2_PIN_CTS),
+        .suc_pin_af = GPIO_AF7_USART3,
+        .suc_irqn = USART3_IRQn
 };
 #endif
 
@@ -249,36 +277,37 @@ static struct bus_i2c_node_cfg cfg_acc = {
 };
 #else   /* USE_BUS_I2C */
 // Note: I2C0 is I2C1 in STM32 doc hence names of defns from HAL
-static struct stm32_hal_i2c_cfg i2c0_cfg = {
+struct stm32_hal_i2c_cfg os_bsp_i2c0_cfg = {
     .hic_i2c = I2C1,
     .hic_rcc_reg = &RCC->APB1ENR,
     .hic_rcc_dev = RCC_APB1ENR_I2C1EN,
-    .hic_pin_sda = I2C_0_SDA,         // ok
-    .hic_pin_scl = I2C_0_SCL,         // ok
+    .hic_pin_sda = MYNEWT_VAL(I2C_0_PIN_SDA),   // I2C_0_SDA,         // ok
+    .hic_pin_scl = MYNEWT_VAL(I2C_0_PIN_SCL),   //I2C_0_SCL,         // ok
     .hic_pin_af = GPIO_AF4_I2C1,
     .hic_10bit = 0,
     .hic_speed = I2C_0_FREQUENCY                     // 100kHz 
 };
+
 #endif /* USE_BUS_I2C */
 
 #endif
 
 // SPI0 (mynewt) refers to SPI1 in STM32 doc
 #if MYNEWT_VAL(SPI_0_SLAVE) || MYNEWT_VAL(SPI_0_MASTER)
-struct stm32_hal_spi_cfg spi0_cfg = {
-    .ss_pin   = SPI_0_MASTER_PIN_NSS, 
-    .sck_pin  = SPI_0_MASTER_PIN_SCK,
-    .miso_pin = SPI_0_MASTER_PIN_MISO,
-    .mosi_pin = SPI_0_MASTER_PIN_MOSI, 
+struct stm32_hal_spi_cfg os_bsp_spi0_cfg = {
+    .sck_pin = MYNEWT_VAL(SPI_0_PIN_SCK),
+    .mosi_pin = MYNEWT_VAL(SPI_0_PIN_MOSI),
+    .miso_pin = MYNEWT_VAL(SPI_0_PIN_MISO),
+    .ss_pin = MYNEWT_VAL(SPI_0_PIN_SS),
     .irq_prio = SPI_0_IRQ_PRIO,
 };
 #endif
 #if MYNEWT_VAL(SPI_1_SLAVE) || MYNEWT_VAL(SPI_1_MASTER)
-struct stm32_hal_spi_cfg spi1_cfg = {
-    .ss_pin   = SPI_1_MASTER_PIN_NSS,      
-    .sck_pin  = SPI_1_MASTER_PIN_SCK,     
-    .miso_pin = SPI_1_MASTER_PIN_MISO, 
-    .mosi_pin = SPI_1_MASTER_PIN_MOSI, 
+struct stm32_hal_spi_cfg os_bsp_spi1_cfg = {
+    .sck_pin = MYNEWT_VAL(SPI_1_PIN_SCK),
+    .mosi_pin = MYNEWT_VAL(SPI_1_PIN_MOSI),
+    .miso_pin = MYNEWT_VAL(SPI_1_PIN_MISO),
+    .ss_pin = MYNEWT_VAL(SPI_1_PIN_SS),
     .irq_prio = SPI_1_IRQ_PRIO,
 };
 #endif
@@ -333,30 +362,38 @@ hal_bsp_init(void)
     bsp_deinit_all_ios();
     
 
+    /* NOTE : we do NOT use the stm32 unified peripheral initialisation code (calling stm32_periph_create()) as
+     * that code does not (yet) have the neccessary to do deinit()/init() when doing sleep modes
+     */
 #if MYNEWT_VAL(UART_0)
 // BW    hal_bsp_uart_init();
     rc = os_dev_create((struct os_dev *) &hal_uart0, UART0_DEV,
-      OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
+      OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&os_bsp_uart0_cfg);
     assert(rc == 0);    
 #endif
-/* Initialised by bitbang package in sysinit
-#if MYNEWT_VAL(UART_DBG)
-    assert(BSP_UART_DBG_TX!=-1);        // mst define at least tx pin
-    rc = os_dev_create((struct os_dev *) &hal_uartdbg, UARTDBG_DEV,
-      OS_DEV_INIT_PRIMARY, 0, uart_bitbang_init, (void *)&uartdbg_cfg);
-    assert(rc == 0);
+#if MYNEWT_VAL(UART_1)
+// BW    hal_bsp_uart_init();
+    rc = os_dev_create((struct os_dev *) &hal_uart1, UART1_DEV,
+      OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&os_bsp_uart1_cfg);
+    assert(rc == 0);    
 #endif
-*/
+#if MYNEWT_VAL(UART_2)
+// BW    hal_bsp_uart_init();
+    rc = os_dev_create((struct os_dev *) &hal_uart2, UART2_DEV,
+      OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&os_bsp_uart2_cfg);
+    assert(rc == 0);    
+#endif
+
 #if MYNEWT_VAL(TIMER_0)
-    hal_timer_init(0, TIM2);
+    hal_timer_init(0, MYNEWT_VAL(TIMER_0_TIM));
 #endif
 
 #if MYNEWT_VAL(TIMER_1)    
-    hal_timer_init(1, TIM3);
+    hal_timer_init(1, MYNEWT_VAL(TIMER_1_TIM));
 #endif
 
 #if MYNEWT_VAL(TIMER_2)
-    hal_timer_init(2, TIM4);
+    hal_timer_init(2, MYNEWT_VAL(TIMER_2_TIM));
 #endif
 
 #if (MYNEWT_VAL(OS_CPUTIME_TIMER_NUM) >= 0)
@@ -421,23 +458,23 @@ int hal_bsp_init_spi(void) {
 
 // note : SPI0 is SPI1 in STM32 doc
 #if MYNEWT_VAL(SPI_0_MASTER)
-    rc = hal_spi_init(0, &spi0_cfg, HAL_SPI_TYPE_MASTER);
+    rc = hal_spi_init(0, &os_bsp_spi0_cfg, HAL_SPI_TYPE_MASTER);
     assert(rc == 0);
 #endif
 
 #if MYNEWT_VAL(SPI_0_SLAVE)
-    rc = hal_spi_init(0, &spi0_cfg, HAL_SPI_TYPE_SLAVE);
+    rc = hal_spi_init(0, &os_bsp_spi0_cfg, HAL_SPI_TYPE_SLAVE);
     assert(rc == 0);
 #endif
 
 #if MYNEWT_VAL(SPI_1_MASTER)
     // MyNewt numbers devices from 0
-    rc = hal_spi_init(1, &spi1_cfg, HAL_SPI_TYPE_MASTER);
+    rc = hal_spi_init(1, &os_bsp_spi1_cfg, HAL_SPI_TYPE_MASTER);
     assert(rc == 0);
 #endif
 
 #if MYNEWT_VAL(SPI_1_SLAVE)
-    rc = hal_spi_init(1, &spi1_cfg, HAL_SPI_TYPE_SLAVE);
+    rc = hal_spi_init(1, &os_bsp_spi1_cfg, HAL_SPI_TYPE_SLAVE);
     assert(rc == 0);
 #endif
     return rc;
@@ -464,18 +501,17 @@ int hal_bsp_deinit_spi(void){
     __HAL_RCC_SPI1_RELEASE_RESET();
     __HAL_RCC_SPI1_CLK_DISABLE( );
 
-    hal_gpio_deinit(spi0_cfg.ss_pin);
-    hal_gpio_init_in(spi0_cfg.ss_pin, HAL_GPIO_PULL_UP);
+    hal_gpio_deinit(os_bsp_spi0_cfg.ss_pin);
+    hal_gpio_init_in(os_bsp_spi0_cfg.ss_pin, HAL_GPIO_PULL_UP);
 
-    hal_gpio_deinit(spi0_cfg.sck_pin);
-    hal_gpio_init_in(spi0_cfg.sck_pin, HAL_GPIO_PULL_DOWN);
+    hal_gpio_deinit(os_bsp_spi0_cfg.sck_pin);
+    hal_gpio_init_in(os_bsp_spi0_cfg.sck_pin, HAL_GPIO_PULL_DOWN);
     
-    hal_gpio_deinit(spi0_cfg.miso_pin);
-    hal_gpio_init_in(spi0_cfg.miso_pin, HAL_GPIO_PULL_DOWN);
+    hal_gpio_deinit(os_bsp_spi0_cfg.miso_pin);
+    hal_gpio_init_in(os_bsp_spi0_cfg.miso_pin, HAL_GPIO_PULL_DOWN);
 
-    hal_gpio_deinit(spi0_cfg.mosi_pin);
-    hal_gpio_init_in(spi0_cfg.mosi_pin, HAL_GPIO_PULL_DOWN);
-
+    hal_gpio_deinit(os_bsp_spi0_cfg.mosi_pin);
+    hal_gpio_init_in(os_bsp_spi0_cfg.mosi_pin, HAL_GPIO_PULL_DOWN);
 #endif
 
 #if MYNEWT_VAL(SPI_1_SLAVE) || MYNEWT_VAL(SPI_1_MASTER)
@@ -484,17 +520,17 @@ int hal_bsp_deinit_spi(void){
     __HAL_RCC_SPI2_RELEASE_RESET();
     __HAL_RCC_SPI2_CLK_DISABLE( );
 
-    hal_gpio_deinit(spi1_cfg.ss_pin);
-    hal_gpio_init_in(spi1_cfg.ss_pin, HAL_GPIO_PULL_UP);
+    hal_gpio_deinit(os_bsp_spi1_cfg.ss_pin);
+    hal_gpio_init_in(os_bsp_spi1_cfg.ss_pin, HAL_GPIO_PULL_UP);
 
-    hal_gpio_deinit(spi1_cfg.sck_pin);
-    hal_gpio_init_in(spi1_cfg.sck_pin, HAL_GPIO_PULL_DOWN);
+    hal_gpio_deinit(os_bsp_spi1_cfg.sck_pin);
+    hal_gpio_init_in(os_bsp_spi1_cfg.sck_pin, HAL_GPIO_PULL_DOWN);
     
-    hal_gpio_deinit(spi1_cfg.miso_pin);
-    hal_gpio_init_in(spi1_cfg.miso_pin, HAL_GPIO_PULL_DOWN);
+    hal_gpio_deinit(os_bsp_spi1_cfg.miso_pin);
+    hal_gpio_init_in(os_bsp_spi1_cfg.miso_pin, HAL_GPIO_PULL_DOWN);
 
-    hal_gpio_deinit(spi1_cfg.mosi_pin);
-    hal_gpio_init_in(spi1_cfg.mosi_pin, HAL_GPIO_PULL_DOWN);
+    hal_gpio_deinit(os_bsp_spi1_cfg.mosi_pin);
+    hal_gpio_init_in(os_bsp_spi1_cfg.mosi_pin, HAL_GPIO_PULL_DOWN);
 
 #endif
     return 0;
@@ -520,13 +556,13 @@ int hal_i2c_config(uint8_t i2c_num, const struct hal_i2c_settings *cfg) {
 int hal_bsp_init_i2c() {
     int rc = 0;
 #if MYNEWT_VAL(I2C_0)
-    rc = hal_i2c_init(0, &i2c0_cfg);
+    rc = hal_i2c_init(0, &os_bsp_i2c0_cfg);
 #endif
 #if MYNEWT_VAL(I2C_1)
-    rc = hal_i2c_init(1, &i2c1_cfg);
+    rc = hal_i2c_init(1, &os_bsp_i2c1_cfg);
 #endif
 #if MYNEWT_VAL(I2C_2)
-    rc = hal_i2c_init(2, &i2c2_cfg);
+    rc = hal_i2c_init(2, &os_bsp_i2c2_cfg);
 #endif
     return rc;
 }
@@ -541,11 +577,11 @@ int hal_bsp_deinit_i2c() {
 
 #if 0
     /*deinit is not done properly because of this : */
-    hal_gpio_deinit(i2c0_cfg.hic_pin_sda);
-    hal_gpio_init_in(i2c0_cfg.hic_pin_sda, HAL_GPIO_PULL_UP);
+    hal_gpio_deinit(os_bsp_i2c0_cfg.hic_pin_sda);
+    hal_gpio_init_in(os_bsp_i2c0_cfg.hic_pin_sda, HAL_GPIO_PULL_UP);
     
-    hal_gpio_deinit(i2c0_cfg.hic_pin_scl);
-   	hal_gpio_init_in(i2c0_cfg.hic_pin_scl, HAL_GPIO_PULL_UP);    
+    hal_gpio_deinit(os_bsp_i2c0_cfg.hic_pin_scl);
+   	hal_gpio_init_in(os_bsp_i2c0_cfg.hic_pin_scl, HAL_GPIO_PULL_UP);    
 #endif
 
 #endif
@@ -891,38 +927,111 @@ void hal_bsp_uart_init(void)
     __HAL_RCC_USART1_RELEASE_RESET( );
     __HAL_RCC_USART1_CLK_ENABLE( );
 
-    hal_gpio_deinit(uart_cfg[0].suc_pin_tx);
-    hal_gpio_init_af(uart_cfg[0].suc_pin_tx, uart_cfg[0].suc_pin_af, 0, 0);
+    if (os_bsp_uart0_cfg.suc_pin_tx>=0) {
+        hal_gpio_deinit(os_bsp_uart0_cfg.suc_pin_tx);
+        hal_gpio_init_af(os_bsp_uart0_cfg.suc_pin_tx, os_bsp_uart0_cfg.suc_pin_af, 0, 0);
+    }
     
-    hal_gpio_deinit(uart_cfg[0].suc_pin_rx);
-    hal_gpio_init_af(uart_cfg[0].suc_pin_rx, uart_cfg[0].suc_pin_af, 0, 0);
+    if (os_bsp_uart0_cfg.suc_pin_rx>=0) {
+        hal_gpio_deinit(os_bsp_uart0_cfg.suc_pin_rx);
+        hal_gpio_init_af(os_bsp_uart0_cfg.suc_pin_rx, os_bsp_uart0_cfg.suc_pin_af, 0, 0);
+    }
+#endif
+#if MYNEWT_VAL(UART_1)
+    __HAL_RCC_USART2_RELEASE_RESET( );
+    __HAL_RCC_USART2_RELEASE_RESET( );
+    __HAL_RCC_USART2_CLK_ENABLE( );
+
+    if (os_bsp_uart1_cfg.suc_pin_tx>=0) {
+        hal_gpio_deinit(os_bsp_uart1_cfg.suc_pin_tx);
+        hal_gpio_init_af(os_bsp_uart1_cfg.suc_pin_tx, os_bsp_uart1_cfg.suc_pin_af, 0, 0);
+    }
+    if (os_bsp_uart1_cfg.suc_pin_rx>=0) {
+       hal_gpio_deinit(os_bsp_uart1_cfg.suc_pin_rx);
+        hal_gpio_init_af(os_bsp_uart1_cfg.suc_pin_rx, os_bsp_uart1_cfg.suc_pin_af, 0, 0);
+    }
+#endif
+#if MYNEWT_VAL(UART_2)
+    __HAL_RCC_USART3_RELEASE_RESET( );
+    __HAL_RCC_USART3_RELEASE_RESET( );
+    __HAL_RCC_USART3_CLK_ENABLE( );
+
+    if (os_bsp_uart2_cfg.suc_pin_tx>=0) {
+        hal_gpio_deinit(os_bsp_uart2_cfg.suc_pin_tx);
+        hal_gpio_init_af(os_bsp_uart2_cfg.suc_pin_tx, os_bsp_uart2_cfg.suc_pin_af, 0, 0);
+    }
+    
+    if (os_bsp_uart2_cfg.suc_pin_rx>=0) {
+        hal_gpio_deinit(os_bsp_uart2_cfg.suc_pin_rx);
+        hal_gpio_init_af(os_bsp_uart2_cfg.suc_pin_rx, os_bsp_uart2_cfg.suc_pin_af, 0, 0);
+    }
 #endif
 }
 
+static GPIO_InitTypeDef highz_cfg = {
+        .Mode = GPIO_MODE_ANALOG,
+        .Pull = GPIO_NOPULL
+};
 
 void hal_bsp_uart_deinit(void)
 {
 #if MYNEWT_VAL(UART_0)
     // Uart0 is UART1 in STM32 doc hence names of HAL defns
-    GPIO_InitTypeDef highz_cfg = {
-        .Mode = GPIO_MODE_ANALOG,
-        .Pull = GPIO_NOPULL
-    };
-
     __HAL_RCC_USART1_FORCE_RESET( );
     __HAL_RCC_USART1_RELEASE_RESET( );
     __HAL_RCC_USART1_CLK_DISABLE( );
 
-    hal_gpio_deinit(uart_cfg[0].suc_pin_tx);
-    highz_cfg.Pin = uart_cfg[0].suc_pin_tx;
-    highz_cfg.Alternate = uart_cfg[0].suc_pin_tx;
-    hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
-    
-    hal_gpio_deinit(uart_cfg[0].suc_pin_rx);
-    highz_cfg.Pin = uart_cfg[0].suc_pin_rx;
-    highz_cfg.Alternate = uart_cfg[0].suc_pin_rx;
-    hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    if (os_bsp_uart0_cfg.suc_pin_tx>=0) {
+        hal_gpio_deinit(os_bsp_uart0_cfg.suc_pin_tx);
+        highz_cfg.Pin = os_bsp_uart0_cfg.suc_pin_tx;
+        highz_cfg.Alternate = os_bsp_uart0_cfg.suc_pin_tx;
+        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    }    
+    if (os_bsp_uart0_cfg.suc_pin_rx>=0) {
+        hal_gpio_deinit(os_bsp_uart0_cfg.suc_pin_rx);
+        highz_cfg.Pin = os_bsp_uart0_cfg.suc_pin_rx;
+        highz_cfg.Alternate = os_bsp_uart0_cfg.suc_pin_rx;
+        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    }
 #endif //MYNEWT_VAL(UART_0)
+#if MYNEWT_VAL(UART_1)
+    // Uart1 is UART2 in STM32 doc hence names of HAL defns
+    __HAL_RCC_USART2_FORCE_RESET( );
+    __HAL_RCC_USART2_RELEASE_RESET( );
+    __HAL_RCC_USART2_CLK_DISABLE( );
+
+    if (os_bsp_uart1_cfg.suc_pin_tx>=0) {
+        hal_gpio_deinit(os_bsp_uart1_cfg.suc_pin_tx);
+        highz_cfg.Pin = os_bsp_uart1_cfg.suc_pin_tx;
+        highz_cfg.Alternate = os_bsp_uart1_cfg.suc_pin_tx;
+        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    }    
+    if (os_bsp_uart1_cfg.suc_pin_rx>=0) {
+        hal_gpio_deinit(os_bsp_uart1_cfg.suc_pin_rx);
+        highz_cfg.Pin = os_bsp_uart1_cfg.suc_pin_rx;
+        highz_cfg.Alternate = os_bsp_uart1_cfg.suc_pin_rx;
+        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    }
+#endif //MYNEWT_VAL(UART_1)
+#if MYNEWT_VAL(UART_2)
+    // Uart2 is UART3 in STM32 doc hence names of HAL defns
+    __HAL_RCC_USART3_FORCE_RESET( );
+    __HAL_RCC_USART3_RELEASE_RESET( );
+    __HAL_RCC_USART3_CLK_DISABLE( );
+
+    if (os_bsp_uart2_cfg.suc_pin_tx>=0) {
+        hal_gpio_deinit(os_bsp_uart2_cfg.suc_pin_tx);
+        highz_cfg.Pin = os_bsp_uart2_cfg.suc_pin_tx;
+        highz_cfg.Alternate = os_bsp_uart2_cfg.suc_pin_tx;
+        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    }    
+    if (os_bsp_uart2_cfg.suc_pin_rx>=0) {
+        hal_gpio_deinit(os_bsp_uart2_cfg.suc_pin_rx);
+        highz_cfg.Pin = os_bsp_uart2_cfg.suc_pin_rx;
+        highz_cfg.Alternate = os_bsp_uart2_cfg.suc_pin_rx;
+        hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
+    }
+#endif //MYNEWT_VAL(UART_2)
 }
 
 /** enter a MCU stop mode, with all periphs off or lowest possible power, and never return */

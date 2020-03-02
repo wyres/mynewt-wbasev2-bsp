@@ -30,7 +30,6 @@ extern "C" {
 
 
 /* UART */
-#define UART_CNT 1
 // mynewt device name to access uarts. Note name is mynewt, STM32 doc pin labelling has UART1/2/3
 #define UART0_DEV "uart0"
 #define UART1_DEV "uart1"
@@ -78,32 +77,32 @@ extern "C" {
 //#define Microphone IIS config?
 
 // I2C0 is first I2C on STM32 (called I2C1 in pinout doc)
-#define I2C_0_SDA       MCU_GPIO_PORTB(9)          // No ADC
-#define I2C_0_SCL       MCU_GPIO_PORTB(8)           // No ADC
+//#define I2C_0_SDA       MCU_GPIO_PORTB(9)          // No ADC
+//#define I2C_0_SCL       MCU_GPIO_PORTB(8)           // No ADC
 #define I2C_0_FREQUENCY (100000)
 
 // SPI0 is mynewt numbering, but SPI1 is STM32 name for first SPI. 
-#define SPI_0_MASTER_PIN_MOSI MCU_GPIO_PORTA(7)
-#define SPI_0_MASTER_PIN_MISO MCU_GPIO_PORTA(6)
-#define SPI_0_MASTER_PIN_SCK MCU_GPIO_PORTA(5)
-#define SPI_0_MASTER_PIN_NSS  MCU_GPIO_PORTA(4) // GP de PB0 en PA4
+//#define SPI_0_MASTER_PIN_MOSI MCU_GPIO_PORTA(7)
+//#define SPI_0_MASTER_PIN_MISO MCU_GPIO_PORTA(6)
+//#define SPI_0_MASTER_PIN_SCK MCU_GPIO_PORTA(5)
+//#define SPI_0_MASTER_PIN_NSS  MCU_GPIO_PORTA(4) // GP de PB0 en PA4
 #define SPI_0_IRQ_PRIO (2)
 #define SPI_0_BAUDRATE (3000)
 
 // ditto for UART
-#define BSP_UART_0_TX MCU_GPIO_PORTA(9)             // No ADC
-#define BSP_UART_0_RX MCU_GPIO_PORTA(10)            // No ADC
+//#define BSP_UART_0_TX MCU_GPIO_PORTA(9)             // No ADC
+//#define BSP_UART_0_RX MCU_GPIO_PORTA(10)            // No ADC
 
 // Bitbang TX only
-#define BSP_UART_1_TX MCU_GPIO_PORTA(2)            // No ADC
+//#define BSP_UART_1_TX MCU_GPIO_PORTA(2)            // No ADC
 
 // non-used UART
-#define BSP_UART_2_TX MCU_GPIO_PORTB(10)             // No ADC
-#define BSP_UART_2_RX MCU_GPIO_PORTB(11)            // No ADC
+//#define BSP_UART_2_TX MCU_GPIO_PORTB(10)             // No ADC
+//#define BSP_UART_2_RX MCU_GPIO_PORTB(11)            // No ADC
 
 // debug uart does bitbang on a gpio (optional) # Uart 1
-#define BSP_UART_DBG_TX MYNEWT_VAL(UART_DBG_TX)
-#define BSP_UART_DBG_RX MYNEWT_VAL(UART_DBG_RX)
+//#define BSP_UART_DBG_TX MYNEWT_VAL(UART_DBG_TX)
+//#define BSP_UART_DBG_RX MYNEWT_VAL(UART_DBG_RX)
 
 #define SX_PWR_ENABLE MCU_GPIO_PORTB(0)
 // I2S2 Pins
@@ -111,12 +110,12 @@ extern "C" {
 #define MICROPHONE_I2S2_CLK_PIN  MCU_GPIO_PORTB(13)
 
 // TODO : remettre a niveau
-#define SX1262_DIO_0    0
-#define SX1262_RESET 0
+#define SX1262_PIN_DIO_0    0
+#define SX1262_PIN_RESET 0
 #define ANTENNA_SWITCH_TX 0
 #define ANTENNA_SWITCH_RX 0
-#define SPI_1_MASTER_PIN_MISO 0
-#define SPI_1_MASTER_PIN_CS 0
+//#define SPI_1_MASTER_PIN_MISO 0
+//#define SPI_1_MASTER_PIN_CS 0
 
 
 

@@ -30,7 +30,6 @@ extern "C" {
 
 
 /* UART */
-//#define UART_CNT 1
 // mynewt device name to access uarts. Note name is mynewt, STM32 doc pin labelling has UART1/2/3
 #define UART0_DEV "uart0"
 #define UART1_DEV "uart1"
