@@ -98,13 +98,13 @@ typedef struct
 
 static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 {    
-    { .pin = MYNEWT_VAL(SX1272_DIO_0), 						.idle_type = GPIO_NOPULL	},
-    { .pin = MYNEWT_VAL(SX1272_DIO_1), 						.idle_type = GPIO_NOPULL	},
-    { .pin = MYNEWT_VAL(SX1272_DIO_2), 						.idle_type = GPIO_NOPULL	},
-    { .pin = MYNEWT_VAL(SX1272_DIO_3), 						.idle_type = GPIO_NOPULL	},
-    { .pin = MYNEWT_VAL(SX1272_DIO_4), 						.idle_type = GPIO_NOPULL	},
-    { .pin = MYNEWT_VAL(SX1272_DIO_5), 						.idle_type = GPIO_NOPULL	},
-    { .pin = MYNEWT_VAL(SX1272_RESET), 						.idle_type = GPIO_PULLUP	},
+    { .pin = SX1272_PIN_DIO_0, 						.idle_type = GPIO_NOPULL	},
+    { .pin = SX1272_PIN_DIO_1, 						.idle_type = GPIO_NOPULL	},
+    { .pin = SX1272_PIN_DIO_2, 						.idle_type = GPIO_NOPULL	},
+    { .pin = SX1272_PIN_DIO_3, 						.idle_type = GPIO_NOPULL	},
+    { .pin = SX1272_PIN_DIO_4, 						.idle_type = GPIO_NOPULL	},
+    { .pin = SX1272_PIN_DIO_5, 						.idle_type = GPIO_NOPULL	},
+    { .pin = SX1272_PIN_RESET, 						.idle_type = GPIO_PULLUP	},
     { .pin = ANTENNA_SWITCH_TX, 							.idle_type = GPIO_NOPULL	},
     { .pin = ANTENNA_SWITCH_RX, 							.idle_type = GPIO_NOPULL	},
 

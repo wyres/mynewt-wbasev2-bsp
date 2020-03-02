@@ -160,17 +160,17 @@ syscfg.vals:
 
     # W_BASE v2 uses SX1272    
     SX1272: 1
-    SX1272_DIO_0: MCU_GPIO_PORTB(1) #PB_1
-    SX1272_DIO_1: MCU_GPIO_PORTB(10) #PB_10
-    SX1272_DIO_2: MCU_GPIO_PORTB(11) #PB_11
-    SX1272_DIO_3: MCU_GPIO_PORTB(7) #PB_7
-    SX1272_DIO_4: MCU_GPIO_PORTB(5) #PB_5
-    SX1272_DIO_5: MCU_GPIO_PORTB(4) #PB_4
-    SX1272_NSS:   MCU_GPIO_PORTB(0) #PB_0
+    SX1272_DIO_0:  MCU_GPIO_PORTB(1)    # 'SX1272_PIN_DIO_0'
+    SX1272_DIO_1:  MCU_GPIO_PORTB(10) # 'SX1272_PIN_DIO_1'
+    SX1272_DIO_2:  MCU_GPIO_PORTB(11) # 'SX1272_PIN_DIO_2'
+    SX1272_DIO_3:  MCU_GPIO_PORTB(7) # 'SX1272_PIN_DIO_3'
+    SX1272_DIO_4:  MCU_GPIO_PORTB(5) # 'SX1272_PIN_DIO_4'
+    SX1272_DIO_5:  MCU_GPIO_PORTB(4) # 'SX1272_PIN_DIO_5'
+    SX1272_NSS:    MCU_GPIO_PORTB(0) # 'SX1272_PIN_NSS'
     # SPI_1 is STM32 naming, index is 0, this is an enum of value 0
     SX1272_SPI: SPI_1
     SX1272_SPI_IDX: 0
-    SX1272_RESET: MCU_GPIO_PORTA(2) #PA_2
+    SX1272_RESET:  MCU_GPIO_PORTA(2) # 'SX1272_PIN_RESET'
 
     # antenna rx/tx switch management is independant of the radio type 
     # code to manipulate these IO is in the BSP

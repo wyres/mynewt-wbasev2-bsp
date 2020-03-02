@@ -30,6 +30,7 @@ extern "C" {
 
 
 /* UART */
+//#define UART_CNT 1
 // mynewt device name to access uarts. Note name is mynewt, STM32 doc pin labelling has UART1/2/3
 #define UART0_DEV "uart0"
 #define UART1_DEV "uart1"
@@ -90,7 +91,15 @@ extern "C" {
 #define MICROPHONE_I2S2_SD_PIN              MCU_GPIO_PORTB(15)
 #define MICROPHONE_I2S2_CLK_PIN             MCU_GPIO_PORTB(13)
 
-// for lora radio
+#define SX1272_PIN_DIO_0						MCU_GPIO_PORTB(1)
+#define SX1272_PIN_DIO_1						MCU_GPIO_PORTB(10)
+#define SX1272_PIN_DIO_2						MCU_GPIO_PORTB(11)
+#define SX1272_PIN_DIO_3						MCU_GPIO_PORTB(7)
+#define SX1272_PIN_DIO_4						MCU_GPIO_PORTB(5)
+#define SX1272_PIN_DIO_5						MCU_GPIO_PORTB(4)
+#define SX1272_PIN_NSS							MCU_GPIO_PORTB(0)
+#define SX1272_PIN_RESET						MCU_GPIO_PORTA(2)
+
 #define ANTENNA_SWITCH_TX					MCU_GPIO_PORTA(4)
 #define ANTENNA_SWITCH_RX					MCU_GPIO_PORTC(13)
 
