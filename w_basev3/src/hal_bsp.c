@@ -231,17 +231,6 @@ static const struct stm32_uart_cfg os_bsp_uart2_cfg = {
 };
 #endif
 
-/* UartDbg is bitbang on a gpio - initialised by the bitbang package in sysinit
-#if MYNEWT_VAL(UART_DBG)
-static struct uart_dev hal_uartdbg;
-static const struct uart_bitbang_conf uartdbg_cfg = {
-    .ubc_rxpin = BSP_UART_DBG_RX,
-    .ubc_txpin = BSP_UART_DBG_TX,
-    .ubc_cputimer_freq = MYNEWT_VAL(OS_CPUTIME_FREQ),
-};
-#endif
-*/
-
 #if MYNEWT_VAL(ADC) 
 /*static struct acd_dev hal_adc_dev;
 static const struct stm32_adc_dev_cfg adc_cfg = {

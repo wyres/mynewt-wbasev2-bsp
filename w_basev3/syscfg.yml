@@ -105,14 +105,14 @@ syscfg.vals:
     UART_0_PIN_CTS: -1
     UART_0_PIN_RTS: -1
 
-    UART_1_PIN_TX: 'MCU_GPIO_PORTB(10)'
-    UART_1_PIN_RX: 'MCU_GPIO_PORTB(11)'
+    # only got a tx pin for uart1 (logging)
+    UART_1_PIN_TX: 'MCU_GPIO_PORTA(2)'
+    UART_1_PIN_RX: -1       #'MCU_GPIO_PORTB(12)'     # NOT REALLY USED (SPI1_SS), BUT UART DRIVER CRASHES OTHERWISE
     UART_1_PIN_CTS: -1
     UART_1_PIN_RTS: -1
 
-    # only got a tx pin for uart2 (logging)
-    UART_2_PIN_TX: 'MCU_GPIO_PORTA(2)'
-    UART_2_PIN_RX: -1
+    UART_2_PIN_TX: 'MCU_GPIO_PORTB(10)'
+    UART_2_PIN_RX: 'MCU_GPIO_PORTB(11)'
     UART_2_PIN_CTS: -1
     UART_2_PIN_RTS: -1
 
@@ -141,8 +141,6 @@ syscfg.vals:
     OS_IDLE_TICKLESS_MS_MAX: 600000
     # main stack size- reasonable as we use it for event execution for certain mgrs (uart etc)
     OS_MAIN_STACK_SIZE: 512
-    # idle stack size increase as lowpower sleep callbacks called on it
-    OS_IDLE_STACK_SIZE: 128
 
     OS_CRASH_RESTORE_REGS: 1
     

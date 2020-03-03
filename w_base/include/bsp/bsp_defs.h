@@ -26,6 +26,12 @@
 extern "C" {
 #endif
 
+// Set os idle stack size here as we have callups from the os_tick_idle()
+#ifdef OS_IDLE_STACK_SIZE
+#undef OS_IDLE_STACK_SIZE
+#endif
+#define OS_IDLE_STACK_SIZE (128)
+
 // The board specific definitions in here for BSP supplied code.
 
 

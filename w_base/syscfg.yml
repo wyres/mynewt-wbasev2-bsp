@@ -128,8 +128,6 @@ syscfg.vals:
     OS_IDLE_TICKLESS_MS_MAX: 600000
     # main stack size- reasonable as we use it for event execution for certain mgrs (uart etc)
     OS_MAIN_STACK_SIZE: 512
-    # idle stack size increase as lowpower sleep callbacks called on it
-    OS_IDLE_STACK_SIZE: 128
 
     OS_CRASH_RESTORE_REGS: 1
 
