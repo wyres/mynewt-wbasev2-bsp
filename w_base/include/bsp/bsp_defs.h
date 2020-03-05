@@ -116,7 +116,6 @@ extern "C" {
 
 #define LSE_IN		 						MCU_GPIO_PORTC(14)
 #define LSE_OUT								MCU_GPIO_PORTC(15)
-#define LSE_VALUE    (32768U)
 
 #ifdef __cplusplus
 }
