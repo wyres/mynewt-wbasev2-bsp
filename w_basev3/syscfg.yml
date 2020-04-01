@@ -64,7 +64,7 @@ syscfg.defs:
         value:  0
 
     UART_DBG_BAUD:
-        description: "baud rate for debug (must be less than or equal to 19200)"    
+        description: "baud rate for debug"    
         value: 19200
 
     I2S:

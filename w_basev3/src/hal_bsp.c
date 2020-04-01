@@ -361,13 +361,11 @@ hal_bsp_init(void)
     assert(rc == 0);    
 #endif
 #if MYNEWT_VAL(UART_1)
-// BW    hal_bsp_uart_init();
     rc = os_dev_create((struct os_dev *) &hal_uart1, UART1_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&os_bsp_uart1_cfg);
     assert(rc == 0);    
 #endif
 #if MYNEWT_VAL(UART_2)
-// BW    hal_bsp_uart_init();
     rc = os_dev_create((struct os_dev *) &hal_uart2, UART2_DEV,
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&os_bsp_uart2_cfg);
     assert(rc == 0);    
