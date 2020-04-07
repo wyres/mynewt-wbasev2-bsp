@@ -72,8 +72,8 @@ syscfg.defs:
         value:  0
 
     BSP_HW_REV:
-        description: "version of base card: 1=revB, 2=revC, 3=revD"
-        value: 3
+        description: "version of base card: (1=v2revB, 2=v2revC, 3=v2revD, 10=v3revA, 11=v3revB)"
+        value: 10
 
     BSP_POWER_SETUP:
         description: "allow or not the general power mode to be handled from mcu and bsp layers"
@@ -176,10 +176,11 @@ syscfg.vals:
     SX126X_XTAL_PINB: 0x1B
  
     SX126X_DIO_1:       MCU_GPIO_PORTB(1)
-    SX126X_RADIO_BUSY:  MCU_GPIO_PORTB(7)
-    SX126X_NSS:         MCU_GPIO_PORTA(4)
     SX126X_RESET:       MCU_GPIO_PORTB(5)
-    SX126X_PWR_ENABLE:  MCU_GPIO_PORTB(0)
+    SX126X_RADIO_BUSY:  MCU_GPIO_PORTB(7)
+    SX126X_NSS:         MCU_GPIO_PORTA(4)       # why does it manipulate this directly in radio code?
+    SX126X_RADIO_DEVICE_SEL: -1     # unused
+
     SX126X_SPI: SPI_1
     SX126X_SPI_IDX: 0
     

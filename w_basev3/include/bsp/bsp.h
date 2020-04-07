@@ -52,7 +52,7 @@ bool hal_bsp_nvmWrite16(uint16_t off, uint16_t v);
 bool hal_bsp_nvmWrite(uint16_t off, uint8_t len, uint8_t* buf);
 uint16_t hal_bsp_nvmSize();
 
-// Get hw version (1=revB, 2=revC, 3=revD)
+// Get hw version (1=v2revB, 2=v2revC, 3=v2revD, 10=v3revA, 11=v3revB)
 int BSP_getHwVer();
 // set hw version (eg from config at boot time rather than the build hardcoded version)
 void BSP_setHwVer(int v);
@@ -79,6 +79,9 @@ int hal_bsp_i2s_read(uint16_t *data);
 
 void hal_bsp_uart_init(void);
 void hal_bsp_uart_deinit(void);
+
+void hal_bsp_radio_on(void);
+void hal_bsp_radio_off(void);
 
 void bsp_deinit_all_ios(void);
 

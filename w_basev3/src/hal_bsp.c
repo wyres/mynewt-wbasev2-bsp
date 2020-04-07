@@ -98,16 +98,15 @@ typedef struct
 
 static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 {    
-    { .pin = SX1262_PIN_DIO_0, 									.idle_type = GPIO_NOPULL	},
-    /*{ .pin = SX122_DIO_1, 									.idle_type = GPIO_NOPULL	},
+/*
+    { .pin = SX1262_PIN_DIO_0, 								.idle_type = GPIO_NOPULL	},
+    { .pin = SX122_DIO_1, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_2, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_3, 									.idle_type = GPIO_NOPULL	},
     { .pin = SX1272_DIO_4, 									.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_DIO_5, 									.idle_type = GPIO_NOPULL	},*/
-    { .pin = SX1262_PIN_RESET, 									.idle_type = GPIO_PULLUP	},
-    { .pin = ANTENNA_SWITCH_TX, 							.idle_type = GPIO_NOPULL	},
-    { .pin = ANTENNA_SWITCH_RX, 							.idle_type = GPIO_NOPULL	},
-
+    { .pin = SX1272_DIO_5, 									.idle_type = GPIO_NOPULL	},
+    { .pin = SX1262_PIN_RESET, 								.idle_type = GPIO_PULLUP	},
+*/
     { .pin = LED_1, 										.idle_type = GPIO_PULLDOWN	},
     { .pin = LED_2, 										.idle_type = GPIO_PULLDOWN	},
  
@@ -421,6 +420,10 @@ hal_bsp_init(void)
     rc = bsp_init_i2s();
     assert(rc == 0);
 #endif //I2S
+
+    /* power up radio here */
+    hal_bsp_radio_on();
+
 }
 
 /**
@@ -693,43 +696,14 @@ void BSP_setHwVer(int v) {
     _hwrev = v;
 }
 // BSP specific functions to set the radio antenna switch correctly
-// For W_BASE card, 2 pins are ALWAYS required (revB or revC or later)
+// For W_BASEV3 card, the antenna switch is controlled by the SX1262 so these functions have no effect
 void BSP_antSwInit(int txPin, int rxPin) {
-    assert(txPin!=-1);
-    assert(rxPin!=-1);
-    hal_gpio_init_out(txPin, 0);
-    hal_gpio_init_out(rxPin, 0);
 }
 void BSP_antSwDeInit(int txPin, int rxPin) {
-    assert(txPin!=-1);
-    assert(rxPin!=-1);
-    hal_gpio_deinit(txPin);
-    hal_gpio_init_out(txPin, 0);
-    hal_gpio_deinit(rxPin);
-    hal_gpio_init_out(rxPin, 0);
 }
 void BSP_antSwTx(int txPin, int rxPin) {
-    assert(txPin!=-1);
-    assert(rxPin!=-1);
-    if (BSP_getHwVer()<2) {     // proto or revB
-        hal_gpio_write(txPin, 1);
-        hal_gpio_write(rxPin, 0);
-    } else {
-        hal_gpio_write(txPin, 0);
-        hal_gpio_write(rxPin, 1);
-    }
 }
 void BSP_antSwRx(int txPin, int rxPin) {
-    assert(txPin!=-1);
-    assert(rxPin!=-1);
-    if (BSP_getHwVer()<2) {     // proto or revB
-        hal_gpio_write(txPin, 0);
-        hal_gpio_write(rxPin, 1);
-    } else {
-        hal_gpio_write(txPin, 1);
-        hal_gpio_write(rxPin, 1);
-
-    }
 }
 
 #if MYNEWT_VAL(ADC) 
@@ -906,6 +880,19 @@ int hal_bsp_i2s_read(uint16_t *data)
     }
 #endif //I2S
 
+// Power up radio
+void hal_bsp_radio_on(void) {
+    assert(RADIO_PWR_ENABLE>=0);        // wbasev3 has radio power control
+    hal_gpio_deinit(RADIO_PWR_ENABLE);
+    hal_gpio_init_out(RADIO_PWR_ENABLE, 1);
+    hal_gpio_write(RADIO_PWR_ENABLE, 1);
+}
+void hal_bsp_radio_off(void) {
+    assert(RADIO_PWR_ENABLE>=0);        // wbasev3 has radio power control
+    hal_gpio_write(RADIO_PWR_ENABLE, 0);
+    hal_gpio_deinit(RADIO_PWR_ENABLE);
+    hal_gpio_init_in(RADIO_PWR_ENABLE, HAL_GPIO_PULL_DOWN);
+}
 
 void hal_bsp_uart_init(void)
 {
@@ -1085,6 +1072,9 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
             /*UART */
             hal_bsp_uart_deinit();
 
+            /* Radio */
+            hal_bsp_radio_off();
+
             break;
         case HAL_BSP_POWER_WFI: 
 
@@ -1122,6 +1112,9 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
 
             /*UART */
             hal_bsp_uart_init();
+
+            /* Radio */
+            hal_bsp_radio_on();
 
             break;
         case HAL_BSP_POWER_WFI: 
