@@ -857,6 +857,83 @@ void hal_bsp_adc_deinit() {
 #endif  /* ADC */
 
 
+/** PWM management functions */
+bool hal_bsp_pwm_init() {
+    // nothing required globally
+    return true;
+}
+bool hal_bsp_pwm_define(int pin, int tim) {
+    // Check that this pin has the AF being the output of this timer
+    // static table for STM32L151CC, crossed with possible GPIO pins free on this board
+    // TODO
+    return true;
+}
+
+bool hal_bsp_pwm_start(int pin, int tim, int freq, int dc) {
+#if 0
+//    GPIO_InitTypeDef GPIO_InitCfg;
+    TIM_TimeBaseInitTypeDef  TIM_TimeBaseInitStruct;
+    TIM_OCInitTypeDef  TIM_OCInitStruct;
+
+    switch(pin) {
+        case MCU_GPIO_PORTA(1): {
+        /* --------------------------- System Clocks Configuration ---------------------*/
+        /* TIM2 clock enable */
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+        /* GPIOA clock enable */
+        RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+
+        /*--------------------------------- GPIO Configuration -------------------------*/
+        // enable pin as AF function for this timer
+/*        GPIO_InitCfg.Pin =  1<<(pin%16);
+        GPIO_InitCfg.Mode = GPIO_MODE_OUTPUT_PP;                	
+        GPIO_InitCfg.Pull = GPIO_NOPULL;              	//who knows think its 'push-pull mode'
+        GPIO_InitCfg.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitCfg.Alternate = GPIO_AF1_TIM2;
+        hal_gpio_init_stm(pin, &GPIO_InitCfg);
+        */
+        hal_gpio_init_af(pin, GPIO_AF1_TIM2, HAL_GPIO_PULL_NONE, 0);
+
+        int period = (1000000 / (freq)) * (HSE_VALUE/1000000); 
+        int dcTrigger = (period * dc) / 100;
+
+        TIM_TimeBaseInitStruct.TIM_Prescaler = 1;
+        TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Down;         //Timer counts up from 0
+        TIM_TimeBaseInitStruct.TIM_Period = period-1;
+        TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStruct);   
+
+        /* PWM1 Mode configuration: Channel2 
+        PA1 is associated with TIM2_CH2
+        The Channel number is in the function call: 
+        TIM_OC2Init = channel 2  */
+        TIM_OCInitStruct.TIM_OCMode = TIM_OCMode_PWM1;                   //pin output mode configured as PWM (repetitive)
+        TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable;
+        TIM_OC2Init(TIM2, &TIM_OCInitStruct);
+        
+        TIM_SetCompare2(TIM2,dcTrigger); // duty cicle [0:1000]
+
+            /* TIM2 enable counter */
+        TIM_Cmd(TIM2, ENABLE);
+        break;
+    }
+    default: {
+        assert(0);      // no other pin supporting PWM out
+    }
+#endif
+    return true;
+}
+void hal_bsp_pwm_stop(int pin, int tim) {
+#if 0
+    	/* TIM2 disable counter */
+	TIM_Cmd(TIM2, DISABLE);
+    /* deconfig pin */
+    hal_gpio_deinit(p->pin);
+#endif
+}
+void hal_bsp_pwm_deinit() {
+        // nothing required globally
+}
+
 #if MYNEWT_VAL(I2S)
 int hal_bsp_i2s_read(uint16_t *data)
 {

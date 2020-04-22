@@ -67,6 +67,12 @@ int hal_bsp_adc_read(int chan);
 void hal_bsp_adc_release(int pin, int chan);
 void hal_bsp_adc_deinit();
 
+bool hal_bsp_pwm_init();
+bool hal_bsp_pwm_define(int pin, int tim);
+bool hal_bsp_pwm_start(int pin,int tim, int freq, int dc);
+void hal_bsp_pwm_stop(int pin,int tim);
+void hal_bsp_pwm_deinit();
+
 int hal_bsp_init_spi(void);
 int hal_bsp_deinit_spi(void);
 
