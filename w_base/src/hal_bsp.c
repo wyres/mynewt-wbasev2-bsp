@@ -90,53 +90,56 @@ extern int hal_gpio_init_stm(int pin, GPIO_InitTypeDef *cfg);
 *   for lowest power consumption in initial
 *   mode
 */
+// how we idle the pins, extending gpio pulls  as defined in stm32l1xx_hal_gpio.h 
+typedef enum { IDLE_NOPULL = GPIO_NOPULL, IDLE_PULLDOWN = GPIO_PULLDOWN, IDLE_PULLUP=GPIO_PULLUP, IDLE_OUT0, IDLE_OUT1 } IDLE_TYPE;
+
 typedef struct
 {
 	int pin;
-	int idle_type;  /*as defined in stm32l1xx_hal_gpio.h */
+	IDLE_TYPE idle_type; 
 }w_base_v2_pins_t;
 
 static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
 {    
-    { .pin = SX1272_PIN_DIO_0, 						.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_PIN_DIO_1, 						.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_PIN_DIO_2, 						.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_PIN_DIO_3, 						.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_PIN_DIO_4, 						.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_PIN_DIO_5, 						.idle_type = GPIO_NOPULL	},
-    { .pin = SX1272_PIN_RESET, 						.idle_type = GPIO_PULLUP	},
-    { .pin = ANTENNA_SWITCH_TX, 							.idle_type = GPIO_NOPULL	},
-    { .pin = ANTENNA_SWITCH_RX, 							.idle_type = GPIO_NOPULL	},
+    { .pin = SX1272_PIN_DIO_0, 						.idle_type = IDLE_NOPULL	},
+    { .pin = SX1272_PIN_DIO_1, 						.idle_type = IDLE_NOPULL	},
+    { .pin = SX1272_PIN_DIO_2, 						.idle_type = IDLE_NOPULL	},
+    { .pin = SX1272_PIN_DIO_3, 						.idle_type = IDLE_NOPULL	},
+    { .pin = SX1272_PIN_DIO_4, 						.idle_type = IDLE_NOPULL	},
+    { .pin = SX1272_PIN_DIO_5, 						.idle_type = IDLE_NOPULL	},
+    { .pin = SX1272_PIN_RESET, 						.idle_type = IDLE_PULLUP	},
+    { .pin = ANTENNA_SWITCH_TX, 							.idle_type = IDLE_NOPULL	},
+    { .pin = ANTENNA_SWITCH_RX, 							.idle_type = IDLE_NOPULL	},
 
-    { .pin = LED_1, 										.idle_type = GPIO_PULLDOWN	},
-    { .pin = LED_2, 										.idle_type = GPIO_PULLDOWN	},
+    { .pin = LED_1, 										.idle_type = IDLE_PULLDOWN	},
+    { .pin = LED_2, 										.idle_type = IDLE_PULLDOWN	},
  
-    { .pin = EXT_UART_PWR, 									.idle_type = GPIO_PULLUP	},
+    { .pin = EXT_UART_PWR, 									.idle_type = IDLE_PULLUP	},
  
-    { .pin = EXT_I2C_PWR, 									.idle_type = GPIO_PULLUP	},
+    { .pin = EXT_I2C_PWR, 									.idle_type = IDLE_PULLUP	},
 
-    { .pin = LIGHT_SENSOR, 									.idle_type = GPIO_PULLDOWN	},
-    { .pin = SPEAKER, 										.idle_type = GPIO_PULLUP	},
+    { .pin = LIGHT_SENSOR, 									.idle_type = IDLE_PULLDOWN	},
+    { .pin = SPEAKER, 										.idle_type = IDLE_PULLUP	},
     /*WARNING : SENSOR_PWR still drains current even in INPUT.PULL_DOWN mode. This pin  */
     /*          must be in OUTPUT zero                                                  */
-    /*{ .pin = SENSOR_PWR, 									.idle_type = GPIO_PULLDOWN 	},*/
+/*    { .pin = SENSOR_PWR, 									.idle_type = IDLE_OUT0 	},*/
 
-    { .pin = EXT_IO, 										.idle_type = GPIO_PULLDOWN	},
-    { .pin = EXT_BUTTON, 									.idle_type = GPIO_PULLDOWN	},
-    { .pin = MYNEWT_VAL(SPI_1_PIN_MISO),					.idle_type = GPIO_PULLDOWN	},
-    { .pin = MYNEWT_VAL(SPI_1_PIN_SS),						.idle_type = GPIO_PULLDOWN	},
+    { .pin = EXT_IO, 										.idle_type = IDLE_PULLDOWN	},
+    { .pin = EXT_BUTTON, 									.idle_type = IDLE_PULLDOWN	},
+    { .pin = MYNEWT_VAL(SPI_1_PIN_MISO),					.idle_type = IDLE_PULLDOWN	},
+    { .pin = MYNEWT_VAL(SPI_1_PIN_SS),						.idle_type = IDLE_PULLDOWN	},
 
 #if 0//MYNEWT_VAL(BUILD_RELEASE)
-    { .pin = SWD_CLK, 										.idle_type = GPIO_PULLDOWN 	},
-    { .pin = SWD_DIO, 										.idle_type = GPIO_PULLDOWN 	},
+    { .pin = SWD_CLK, 										.idle_type = IDLE_PULLDOWN 	},
+    { .pin = SWD_DIO, 										.idle_type = IDLE_PULLDOWN 	},
 #endif
  
-    { .pin = HSE_IN, 										.idle_type = GPIO_NOPULL 	},
-    { .pin = HSE_OUT, 										.idle_type = GPIO_NOPULL 	},
+    { .pin = HSE_IN, 										.idle_type = IDLE_NOPULL 	},
+    { .pin = HSE_OUT, 										.idle_type = IDLE_NOPULL 	},
  
     /*TODO : test it */
-    /*{ .pin = LSE_IN, 										.idle_type = GPIO_PULLDOWN 	},      */
-    /*{ .pin = LSE_OUT, 										.idle_type = GPIO_PULLDOWN 	},  */
+    /*{ .pin = LSE_IN, 										.idle_type = IDLE_PULLDOWN 	},      */
+    /*{ .pin = LSE_OUT, 										.idle_type = IDLE_PULLDOWN 	},  */
 };
 
 
@@ -168,17 +171,30 @@ void bsp_deinit_all_ios()
         type = W_BASE_V2_PINS_IDLE[i].idle_type;
 
         if(pin > 0){
-            //deinit will set it as configured
+            //deinit will set it as nonconfigured
             hal_gpio_deinit(pin);
-            if(type==GPIO_NOPULL){
+            switch(type) {
+            case IDLE_NOPULL:{
                 /*note for HIGH_Z mode :                                */
                 /*analog input setup is recommmended for lowest power   */
                 /*consumption but actually not allowed by hal_gpio.c   */
                 highz_cfg.Pin = pin;
                 highz_cfg.Alternate = pin;
                 hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
-            }else{
+                break;
+            }
+            case IDLE_OUT0: {
+                hal_gpio_init_out(pin, 0);
+                break;
+            }
+            case IDLE_OUT1: {
+                hal_gpio_init_out(pin, 1);
+                break;
+            }
+            default: {
                 hal_gpio_init_in(pin, type);
+                break;
+            }
             }
         }
     }
@@ -416,6 +432,8 @@ hal_bsp_get_nvic_priority(int irq_num, uint32_t pri)
     return pri;
 }
 
+
+/*** SPI **/
 int hal_bsp_init_spi(void) {
 
     int rc=0;
@@ -607,6 +625,25 @@ int bsp_deinit_i2s()
     return rc;
 }
 
+int hal_bsp_i2s_read(uint16_t *data)
+{
+    HAL_StatusTypeDef rc = HAL_ERROR;
+
+    while( __HAL_I2S_GET_FLAG( &I2S_InitStructure, I2S_FLAG_TXE ) == RESET );
+    rc = HAL_I2S_Transmit(&I2S_InitStructure, data, 1, 0xFF);
+    if (rc != HAL_OK)
+    {
+        return -1;
+    }
+
+    while( __HAL_I2S_GET_FLAG( &I2S_InitStructure, I2S_FLAG_RXNE ) == RESET );
+    rc = HAL_I2S_Receive(&I2S_InitStructure, data, 1, 0xFF);
+    if (rc != HAL_OK)
+    {
+        return -1;
+    }
+    return 0;
+}
 
 #else
 int bsp_init_i2s()
@@ -617,6 +654,11 @@ int bsp_init_i2s()
 int bsp_deinit_i2s()
 {
     return 0;
+}
+
+int hal_bsp_i2s_read(uint16_t *data)
+{
+    return -1;
 }
 #endif //I2S
 
@@ -710,6 +752,7 @@ void BSP_antSwRx(int txPin, int rxPin) {
     }
 }
 
+/* ADC */
 #if MYNEWT_VAL(ADC) 
 // Initialise an adc for basic gpio like use
 static struct {
@@ -934,34 +977,7 @@ void hal_bsp_pwm_deinit() {
         // nothing required globally
 }
 
-#if MYNEWT_VAL(I2S)
-int hal_bsp_i2s_read(uint16_t *data)
-{
-    HAL_StatusTypeDef rc = HAL_ERROR;
-
-    while( __HAL_I2S_GET_FLAG( &I2S_InitStructure, I2S_FLAG_TXE ) == RESET );
-    rc = HAL_I2S_Transmit(&I2S_InitStructure, data, 1, 0xFF);
-    if (rc != HAL_OK)
-    {
-        return -1;
-    }
-
-    while( __HAL_I2S_GET_FLAG( &I2S_InitStructure, I2S_FLAG_RXNE ) == RESET );
-    rc = HAL_I2S_Receive(&I2S_InitStructure, data, 1, 0xFF);
-    if (rc != HAL_OK)
-    {
-        return -1;
-    }
-    return 0;
-}
-#else
-    int hal_bsp_i2s_read(uint16_t *data)
-    {
-        return -1;
-    }
-#endif //I2S
-
-
+// UART
 void hal_bsp_uart_init(void)
 {
 #if MYNEWT_VAL(UART_0)
@@ -1008,8 +1024,9 @@ void hal_bsp_halt() {
       
     //tell lowpowermgr to deinit stuff
     hal_bsp_power_handler_sleep_enter(HAL_BSP_POWER_DEEP_SLEEP);
-
-    // ask MCU HAL to stop it
+    // Explicitly deconfig all ios
+    bsp_deinit_all_ios();
+    // ask MCU HAL to halt 
     hal_mcu_halt();
 }
 
@@ -1046,7 +1063,6 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
     if (_hook_enter_cb!=NULL) {
         (*_hook_enter_cb)();
     }
-
     /* Now BSP deinit                      */
     /* shared bus interfaces               */
     switch(nextMode) {
@@ -1054,7 +1070,7 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
         case HAL_BSP_POWER_OFF:
         case HAL_BSP_POWER_DEEP_SLEEP:
         case HAL_BSP_POWER_SLEEP:
-          
+            // These deinit()s gain about 100uA in SLEEP/STOP modes
             /* I2S */
             bsp_deinit_i2s();
 
@@ -1084,7 +1100,6 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
     if (_hook_exit_cb!=NULL) {
         (*_hook_exit_cb)();
     }
-
     /* Now BSP must reinit                 */
     /* shared bus interfaces               */
     switch(lastMode) {
@@ -1092,7 +1107,7 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
         case HAL_BSP_POWER_OFF:
         case HAL_BSP_POWER_DEEP_SLEEP:
         case HAL_BSP_POWER_SLEEP:
-     
+
             /* I2S */
             bsp_init_i2s();
 
