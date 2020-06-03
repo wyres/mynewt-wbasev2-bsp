@@ -124,8 +124,8 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     /*          must be in OUTPUT zero                                                  */
 /*    { .pin = SENSOR_PWR, 									.idle_type = IDLE_OUT0 	},*/
 
-    { .pin = EXT_IO, 										.idle_type = IDLE_PULLDOWN	},
-    { .pin = EXT_BUTTON, 									.idle_type = IDLE_PULLDOWN	},
+    { .pin = EXT_IO, 										.idle_type = IDLE_PULLUP	},
+    { .pin = EXT_BUTTON, 									.idle_type = IDLE_PULLUP	},      // As there is a pullup on the dcard (300uA otherwise)
     { .pin = MYNEWT_VAL(SPI_1_PIN_MISO),					.idle_type = IDLE_PULLDOWN	},
     { .pin = MYNEWT_VAL(SPI_1_PIN_SS),						.idle_type = IDLE_PULLDOWN	},
 
@@ -1002,7 +1002,6 @@ void hal_bsp_uart_deinit(void)
         .Mode = GPIO_MODE_ANALOG,
         .Pull = GPIO_NOPULL
     };
-
     __HAL_RCC_USART1_FORCE_RESET( );
     __HAL_RCC_USART1_RELEASE_RESET( );
     __HAL_RCC_USART1_CLK_DISABLE( );
@@ -1075,8 +1074,9 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
             bsp_deinit_i2s();
 
             /* I2C */
-            hal_bsp_deinit_i2c();
-
+/* issue with deinit/init i2c? seems to hang on re-init 
+            hal_bsp_deinit_i2c();       // approx 20uA gain here
+*/
             /* SPI */
             hal_bsp_deinit_spi();
 
@@ -1112,8 +1112,9 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
             bsp_init_i2s();
 
             /* I2C */         
+/* issue with deinit/init i2c? seems to hang on re-init 
             hal_bsp_init_i2c();
-
+*/
             /* SPI */
             hal_bsp_init_spi();
 
