@@ -124,7 +124,7 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     /*          must be in OUTPUT zero                                                  */
 /*    { .pin = SENSOR_PWR, 									.idle_type = IDLE_OUT0 	},*/
 
-    { .pin = EXT_IO, 										.idle_type = IDLE_PULLUP	},
+    { .pin = EXT_IO, 										.idle_type = IDLE_PULLUP	},      // Must PULLUP with revC/D d-card as Hall effect is pull'd up (13mA current!)
     { .pin = EXT_BUTTON, 									.idle_type = IDLE_PULLUP	},      // As there is a pullup on the dcard (300uA otherwise)
     { .pin = MYNEWT_VAL(SPI_1_PIN_MISO),					.idle_type = IDLE_PULLDOWN	},
     { .pin = MYNEWT_VAL(SPI_1_PIN_SS),						.idle_type = IDLE_PULLDOWN	},
