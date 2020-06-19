@@ -133,10 +133,10 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = SWD_CLK, 										.idle_type = IDLE_PULLDOWN 	},
     { .pin = SWD_DIO, 										.idle_type = IDLE_PULLDOWN 	},
 #endif
- 
+ /* seems unnesssary
     { .pin = HSE_IN, 										.idle_type = IDLE_NOPULL 	},
     { .pin = HSE_OUT, 										.idle_type = IDLE_NOPULL 	},
- 
+ */
     /*TODO : test it */
     /*{ .pin = LSE_IN, 										.idle_type = IDLE_PULLDOWN 	},      */
     /*{ .pin = LSE_OUT, 										.idle_type = IDLE_PULLDOWN 	},  */
@@ -1069,22 +1069,25 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
         case HAL_BSP_POWER_OFF:
         case HAL_BSP_POWER_DEEP_SLEEP:
         case HAL_BSP_POWER_SLEEP:
-            // These deinit()s gain about 100uA in SLEEP/STOP modes
+            // These deinit()s gain about 100uA in SLEEP/STOP modes?
             /* I2S */
             bsp_deinit_i2s();
 
-            /* I2C */
-/* issue with deinit/init i2c? seems to hang on re-init 
+            /* I2C - negliable */
+/* issue with deinit/init seems to hang on re-init 
             hal_bsp_deinit_i2c();       // approx 20uA gain here
 */
-            /* SPI */
+            /* SPI - 60uA */
             hal_bsp_deinit_spi();
 
-            /*UART */
+            /*UART - 3mA */
             hal_bsp_uart_deinit();
 
             break;
+
         case HAL_BSP_POWER_WFI: 
+            /* Dont deinit any hw for this case */
+            break;
 
         case HAL_BSP_POWER_ON:
         default:             
@@ -1112,7 +1115,7 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
             bsp_init_i2s();
 
             /* I2C */         
-/* issue with deinit/init i2c? seems to hang on re-init 
+/* issue with deinit/init seems to hang on re-init 
             hal_bsp_init_i2c();
 */
             /* SPI */
@@ -1122,7 +1125,10 @@ void hal_bsp_power_handler_sleep_exit(int lastMode)
             hal_bsp_uart_init();
 
             break;
+
         case HAL_BSP_POWER_WFI: 
+            /* Dont deinit any hw for this case */
+            break;
 
         case HAL_BSP_POWER_ON:
         default:             
