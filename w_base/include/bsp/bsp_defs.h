@@ -88,6 +88,10 @@ extern "C" {
 #define SPI_0_IRQ_PRIO (2)
 #define SPI_0_BAUDRATE (3000)
 
+#define SPI_1_IRQ_PRIO (2)
+#define SPI_1_BAUDRATE (3000)
+// Note I2C and SPI pin allocation is in syscfg.yml
+
 // debug uart does bitbang on a gpio (optional)
 #define BSP_UART_DBG_TX                     MYNEWT_VAL(UART_DBG_TX)
 #define BSP_UART_DBG_RX                     MYNEWT_VAL(UART_DBG_RX)
@@ -95,6 +99,12 @@ extern "C" {
 // I2S2 Pins
 #define MICROPHONE_I2S2_SD_PIN              MCU_GPIO_PORTB(15)
 #define MICROPHONE_I2S2_CLK_PIN             MCU_GPIO_PORTB(13)
+
+// CN5 : note this can be SPI2 bus (but not if using microphone, as PB13/PB15 are used for I2S) or GPIOs (again, PB13/PB15 not if using microphone)
+#define CN5_PIN1                            MCU_GPIO_PORTB(15)
+#define CN5_PIN2                            MCU_GPIO_PORTB(14)
+#define CN5_PIN3                            MCU_GPIO_PORTB(13)
+#define CN5_PIN4                            MCU_GPIO_PORTB(12)
 
 #define SX1272_PIN_DIO_0						MCU_GPIO_PORTB(1)
 #define SX1272_PIN_DIO_1						MCU_GPIO_PORTB(10)

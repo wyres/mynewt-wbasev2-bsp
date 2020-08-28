@@ -199,6 +199,61 @@ void bsp_deinit_all_ios()
         }
     }
 }
+void 
+bsp_disable_irqs() {
+  NVIC_DisableIRQ(WWDG_IRQn);      /*!< Window WatchDog Interrupt                               */
+  NVIC_DisableIRQ(PVD_IRQn);      /*!< PVD through EXTI Line detection Interrupt               */
+  NVIC_DisableIRQ(TAMPER_STAMP_IRQn);      /*!< Tamper and TimeStamp interrupts through the EXTI line   */
+  NVIC_DisableIRQ(RTC_WKUP_IRQn);      /*!< RTC Wakeup Timer through EXTI Line Interrupt            */
+  NVIC_DisableIRQ(FLASH_IRQn);      /*!< FLASH global Interrupt                                  */
+  NVIC_DisableIRQ(RCC_IRQn);      /*!< RCC global Interrupt                                    */
+  NVIC_DisableIRQ(EXTI0_IRQn);      /*!< EXTI Line0 Interrupt                                    */
+  NVIC_DisableIRQ(EXTI1_IRQn);      /*!< EXTI Line1 Interrupt                                    */
+  NVIC_DisableIRQ(EXTI2_IRQn);      /*!< EXTI Line2 Interrupt                                    */
+  NVIC_DisableIRQ(EXTI3_IRQn);      /*!< EXTI Line3 Interrupt                                    */
+  NVIC_DisableIRQ(EXTI4_IRQn);     /*!< EXTI Line4 Interrupt                                    */
+  NVIC_DisableIRQ(DMA1_Channel1_IRQn);     /*!< DMA1 Channel 1 global Interrupt                         */
+  NVIC_DisableIRQ(DMA1_Channel2_IRQn);     /*!< DMA1 Channel 2 global Interrupt                         */
+  NVIC_DisableIRQ(DMA1_Channel3_IRQn);     /*!< DMA1 Channel 3 global Interrupt                         */
+  NVIC_DisableIRQ(DMA1_Channel4_IRQn);     /*!< DMA1 Channel 4 global Interrupt                         */
+  NVIC_DisableIRQ(DMA1_Channel5_IRQn);     /*!< DMA1 Channel 5 global Interrupt                         */
+  NVIC_DisableIRQ(DMA1_Channel6_IRQn );     /*!< DMA1 Channel 6 global Interrupt                         */
+  NVIC_DisableIRQ(DMA1_Channel7_IRQn );     /*!< DMA1 Channel 7 global Interrupt                         */
+  NVIC_DisableIRQ(ADC1_IRQn);     /*!< ADC1 global Interrupt                                   */
+  NVIC_DisableIRQ(USB_HP_IRQn);     /*!< USB High Priority Interrupt                             */
+  NVIC_DisableIRQ(USB_LP_IRQn);     /*!< USB Low Priority Interrupt                              */
+  NVIC_DisableIRQ(DAC_IRQn);     /*!< DAC Interrupt                                           */
+  NVIC_DisableIRQ(COMP_IRQn);     /*!< Comparator through EXTI Line Interrupt                  */
+  NVIC_DisableIRQ(EXTI9_5_IRQn);     /*!< External Line[9:5] Interrupts                           */
+  NVIC_DisableIRQ(TIM9_IRQn);     /*!< TIM9 global Interrupt                                   */
+  NVIC_DisableIRQ(TIM10_IRQn);     /*!< TIM10 global Interrupt                                  */
+  NVIC_DisableIRQ(TIM11_IRQn);     /*!< TIM11 global Interrupt                                  */
+  NVIC_DisableIRQ(TIM2_IRQn);     /*!< TIM2 global Interrupt                                   */
+  NVIC_DisableIRQ(TIM3_IRQn);     /*!< TIM3 global Interrupt                                   */
+  NVIC_DisableIRQ(TIM4_IRQn);     /*!< TIM4 global Interrupt                                   */
+  NVIC_DisableIRQ(I2C1_EV_IRQn);     /*!< I2C1 Event Interrupt                                    */
+  NVIC_DisableIRQ(I2C1_ER_IRQn);     /*!< I2C1 Error Interrupt                                    */
+  NVIC_DisableIRQ(I2C2_EV_IRQn);     /*!< I2C2 Event Interrupt                                    */
+  NVIC_DisableIRQ(I2C2_ER_IRQn);     /*!< I2C2 Error Interrupt                                    */
+  NVIC_DisableIRQ(SPI1_IRQn);     /*!< SPI1 global Interrupt                                   */
+  NVIC_DisableIRQ(SPI2_IRQn);     /*!< SPI2 global Interrupt                                   */
+  NVIC_DisableIRQ(USART1_IRQn);     /*!< USART1 global Interrupt                                 */
+  NVIC_DisableIRQ(USART2_IRQn);     /*!< USART2 global Interrupt                                 */
+  NVIC_DisableIRQ(USART3_IRQn );     /*!< USART3 global Interrupt                                 */
+  NVIC_DisableIRQ(EXTI15_10_IRQn);     /*!< External Line[15:10] Interrupts                         */
+  NVIC_DisableIRQ(RTC_Alarm_IRQn);     /*!< RTC Alarm through EXTI Line Interrupt                   */
+  NVIC_DisableIRQ(USB_FS_WKUP_IRQn);     /*!< USB FS WakeUp from suspend through EXTI Line Interrupt  */
+  NVIC_DisableIRQ(TIM6_IRQn);     /*!< TIM6 global Interrupt                                   */
+  NVIC_DisableIRQ(TIM7_IRQn);     /*!< TIM7 global Interrupt                                   */
+  NVIC_DisableIRQ(TIM5_IRQn);     /*!< TIM5 global Interrupt                                   */
+  NVIC_DisableIRQ(SPI3_IRQn);     /*!< SPI3 global Interrupt                                   */
+  NVIC_DisableIRQ(DMA2_Channel1_IRQn);     /*!< DMA2 Channel 1 global Interrupt                         */
+  NVIC_DisableIRQ(DMA2_Channel2_IRQn);     /*!< DMA2 Channel 2 global Interrupt                         */
+  NVIC_DisableIRQ(DMA2_Channel3_IRQn);     /*!< DMA2 Channel 3 global Interrupt                         */
+  NVIC_DisableIRQ(DMA2_Channel4_IRQn);     /*!< DMA2 Channel 4 global Interrupt                         */
+  NVIC_DisableIRQ(DMA2_Channel5_IRQn);     /*!< DMA2 Channel 5 global Interrupt                         */
+  NVIC_DisableIRQ(COMP_ACQ_IRQn);      /*!< Comparator Channel Acquisition global Interrupt         */
+}
 
 /* Uart0 is UART1 in STM32 doc hence names of HAL defns */
 #if MYNEWT_VAL(UART_0)
@@ -343,10 +398,16 @@ hal_bsp_init(void)
     int rc;
 
     (void)rc;
-
+    /* may have come from bootloader, so need to re-disable all elements we don't explicitly want */
     /*GPIOs & interfaces*/
     bsp_deinit_all_ios();
-    
+    /* timers */
+    hal_timer_deinit(0);
+    hal_timer_deinit(1);
+    hal_timer_deinit(2);
+    /* IRQs */
+    bsp_disable_irqs();
+
     /* NOTE : we do NOT use the stm32 unified peripheral initialisation code (calling stm32_periph_create()) as
      * that code does not (yet) have the neccessary to do deinit()/init() when doing sleep modes
      */
@@ -356,14 +417,8 @@ hal_bsp_init(void)
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&os_bsp_uart0_cfg);
     assert(rc == 0);    
 #endif
-/* Initialised by bitbang package in sysinit
-#if MYNEWT_VAL(UART_DBG)
-    assert(BSP_UART_DBG_TX!=-1);        // mst define at least tx pin
-    rc = os_dev_create((struct os_dev *) &hal_uartdbg, UARTDBG_DEV,
-      OS_DEV_INIT_PRIMARY, 0, uart_bitbang_init, (void *)&uartdbg_cfg);
-    assert(rc == 0);
-#endif
-*/
+/* Note : bitbang uart device is initialised by bitbang package in its sysinit call */
+
 #if MYNEWT_VAL(TIMER_0)
     hal_timer_init(0, MYNEWT_VAL(TIMER_0_TIM));
 #endif

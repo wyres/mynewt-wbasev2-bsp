@@ -88,8 +88,13 @@ syscfg.vals:
     UART_0 : 1
     UART_1 : 0
     UART_2 : 0    
-    # Timer 0 is enabled but not used directly
+
+    # Timer 0 can be enabled for use as OS timer, using STM32 hw timer (timer2 by default)
     TIMER_0 : 1
+    TIMER_0_TIM: 'TIM2'
+    # timer for OS to use by default in the BSP
+    OS_CPUTIME_TIMER_NUM: 0
+
     TIMER_1 : 0
     TIMER_2 : 0
     # enable only I2C0 (STM32 doc labelled as I2C1)
@@ -110,20 +115,20 @@ syscfg.vals:
     SPI_0_PIN_SCK: 'MCU_GPIO_PORTA(5)'
     SPI_0_PIN_SS: 'MCU_GPIO_PORTB(0)'
 
+    # warning SPI1 (aka SPI2 for ST) shares pins PB13/15 with with I2S interface - cannot use both at same time
+    SPI_1_PIN_MOSI: 'MCU_GPIO_PORTB(15)'
     SPI_1_PIN_MISO : 'MCU_GPIO_PORTB(14)'
+    SPI_1_PIN_SCK: 'MCU_GPIO_PORTB(13)'
     SPI_1_PIN_SS : 'MCU_GPIO_PORTB(12)'
 
     I2C_0_PIN_SDA: 'MCU_GPIO_PORTB(9)'
     I2C_0_PIN_SCL: 'MCU_GPIO_PORTB(8)'
 
-    TIMER_0_TIM: 'TIM2'
 
     REBOOT_LOG_FLASH_AREA: FLASH_AREA_REBOOT_LOG
 #    CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
 #    COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
-    # timer for OS to use by default in the BSP : Timer0
-    OS_CPUTIME_TIMER_NUM: 0
 
     # minimum and maximum millisecs that proc will sleep for (related to max time the timer used for tickless mode can run for)
     OS_IDLE_TICKLESS_MS_MIN: 100
@@ -178,11 +183,15 @@ syscfg.vals:
     RADIO_ANT_SWITCH_RX: MCU_GPIO_PORTC(13) #PC_13
     
     # if enabled tickless mode, disable timer0 and uart dbg
+    # TODO timer0 as cputimer _should_ be allowed for app use in tickless mode (assuming the app takes care of it) but it doesn't get disabled for sleep correctly?!
 syscfg.vals.OS_TICKLESS_RTC:
     OS_CPUTIME_TIMER_NUM: -1
+    TIMER_0 : 0
+
     UART_DBG : 0
 
     # if enabled debug uart, cannot use tickless mode (as the bitbang uart timer is too disturbing), and need the cputime timer
 syscfg.vals.UART_DBG:
     OS_TICKLESS_RTC: 0
     OS_CPUTIME_TIMER_NUM: 0
+    TIMER_0 : 1
