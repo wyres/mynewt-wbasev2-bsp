@@ -399,14 +399,14 @@ hal_bsp_init(void)
 
     (void)rc;
     /* may have come from bootloader, so need to re-disable all elements we don't explicitly want */
+    /* IRQs */
+    bsp_disable_irqs();
     /*GPIOs & interfaces*/
     bsp_deinit_all_ios();
     /* timers */
     hal_timer_deinit(0);
     hal_timer_deinit(1);
     hal_timer_deinit(2);
-    /* IRQs */
-    bsp_disable_irqs();
 
     /* NOTE : we do NOT use the stm32 unified peripheral initialisation code (calling stm32_periph_create()) as
      * that code does not (yet) have the neccessary to do deinit()/init() when doing sleep modes
@@ -734,7 +734,9 @@ uint8_t hal_bsp_nvmRead8(uint16_t off) {
     return *((volatile uint8_t*)(PROM_BASE+off));
 }
 uint16_t hal_bsp_nvmRead16(uint16_t off) {
-    return *((volatile uint16_t*)(PROM_BASE+off));
+    // Read as LE 
+    return (*((volatile uint8_t*)(PROM_BASE+off))
+            + (*((volatile uint8_t*)(PROM_BASE+off+1)) << 8));
 }
 bool hal_bsp_nvmRead(uint16_t off, uint8_t len, uint8_t* buf) {
     for(int i=0;i<len;i++) {
@@ -745,11 +747,19 @@ bool hal_bsp_nvmRead(uint16_t off, uint8_t len, uint8_t* buf) {
 
 bool hal_bsp_nvmWrite8(uint16_t off, uint8_t v) {
     HAL_FLASHEx_DATAEEPROM_Erase(FLASH_TYPEERASEDATA_BYTE, ((uint32_t)PROM_BASE)+off);
-    return (HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_FASTBYTE, ((uint32_t)PROM_BASE)+off, v)==HAL_OK);
+    // WARNING : Do NOT use the 'FASTBYTE' programming, as this erases (needs erased) the entire WORD the byte is located in [ref manual p.69]
+    return (HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_BYTE, ((uint32_t)PROM_BASE)+off, v)==HAL_OK);
 }
 bool hal_bsp_nvmWrite16(uint16_t off, uint16_t v) {
+    /* Unsure if the hal code takes into account the case where the address is not aligned on a 16bit boundry. Changed to use 2 explicit byte writes.
     HAL_FLASHEx_DATAEEPROM_Erase(FLASH_TYPEERASEDATA_HALFWORD, ((uint32_t)PROM_BASE)+off);
-    return (HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_FASTHALFWORD, ((uint32_t)PROM_BASE)+off, v)==HAL_OK);
+    // WARNING : Do NOT use the 'FASTHALFWORD' programming, as this erases (needs erased) the entire WORD the halfword is located in [ref manual p.68]
+    return (HAL_FLASHEx_DATAEEPROM_Program(FLASH_TYPEPROGRAMDATA_HALFWORD, ((uint32_t)PROM_BASE)+off, v)==HAL_OK);
+    */
+    // Write as LE byte by byte
+    bool rc = hal_bsp_nvmWrite8(off, (uint8_t)(v & 0xff));
+    rc &= hal_bsp_nvmWrite8(off+1, (uint8_t)((v >> 8) & 0xff));
+    return rc;
 }
 bool hal_bsp_nvmWrite(uint16_t off, uint8_t len, uint8_t* buf) {
     bool ret = true;
@@ -1080,6 +1090,12 @@ void hal_bsp_halt() {
     hal_bsp_power_handler_sleep_enter(HAL_BSP_POWER_DEEP_SLEEP);
     // Explicitly deconfig all ios
     bsp_deinit_all_ios();
+    /* timers */
+    hal_timer_deinit(0);
+    hal_timer_deinit(1);
+    hal_timer_deinit(2);
+    /* IRQs */
+    bsp_disable_irqs();
     // ask MCU HAL to halt 
     hal_mcu_halt();
 }
