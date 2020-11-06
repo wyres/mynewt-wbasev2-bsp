@@ -348,7 +348,6 @@ hal_bsp_init(void)
 
     /*GPIOs & interfaces*/
     bsp_deinit_all_ios();
-    
 
     /* NOTE : we do NOT use the stm32 unified peripheral initialisation code (calling stm32_periph_create()) as
      * that code does not (yet) have the neccessary to do deinit()/init() when doing sleep modes
@@ -1019,14 +1018,13 @@ void hal_bsp_uart_init(void)
 #endif
 }
 
-static GPIO_InitTypeDef highz_cfg = {
-        .Mode = GPIO_MODE_ANALOG,
-        .Pull = GPIO_NOPULL
-};
-
 void hal_bsp_uart_deinit(void)
 {
 #if MYNEWT_VAL(UART_0)
+    GPIO_InitTypeDef highz_cfg = {
+        .Mode = GPIO_MODE_ANALOG,
+        .Pull = GPIO_NOPULL
+    };
     // Uart0 is UART1 in STM32 doc hence names of HAL defns
     __HAL_RCC_USART1_FORCE_RESET( );
     __HAL_RCC_USART1_RELEASE_RESET( );

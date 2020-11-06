@@ -90,13 +90,16 @@ syscfg.vals:
     UART_2 : 0    
 
     # Timer 0 can be enabled for use as OS timer, using STM32 hw timer (timer2 by default)
-    TIMER_0 : 1
-    TIMER_0_TIM: 'TIM2'
-    # timer for OS to use by default in the BSP
-    OS_CPUTIME_TIMER_NUM: 0
-
+    TIMER_0 : 0
     TIMER_1 : 0
     TIMER_2 : 0
+    # timer 0 is Timer2, 1 is Timer6 and 2 is Timer7...
+    TIMER_0_TIM: 'TIM2'
+    TIMER_1_TIM: 'TIM6'
+    TIMER_2_TIM: 'TIM7'
+    # timer for OS to use for its 'hw timer' routines
+    OS_CPUTIME_TIMER_NUM: -1
+
     # enable only I2C0 (STM32 doc labelled as I2C1)
     I2C_0: 1
     I2C_1: 0
@@ -116,10 +119,10 @@ syscfg.vals:
     SPI_0_PIN_SS: 'MCU_GPIO_PORTB(0)'
 
     # warning SPI1 (aka SPI2 for ST) shares pins PB13/15 with with I2S interface - cannot use both at same time
-    SPI_1_PIN_MOSI: 'MCU_GPIO_PORTB(15)'
-    SPI_1_PIN_MISO : 'MCU_GPIO_PORTB(14)'
-    SPI_1_PIN_SCK: 'MCU_GPIO_PORTB(13)'
-    SPI_1_PIN_SS : 'MCU_GPIO_PORTB(12)'
+    SPI_1_PIN_MOSI: -1      # 'MCU_GPIO_PORTB(15)'
+    SPI_1_PIN_MISO : -1     # 'MCU_GPIO_PORTB(14)'
+    SPI_1_PIN_SCK: -1       # 'MCU_GPIO_PORTB(13)'
+    SPI_1_PIN_SS : -1       # 'MCU_GPIO_PORTB(12)'
 
     I2C_0_PIN_SDA: 'MCU_GPIO_PORTB(9)'
     I2C_0_PIN_SCL: 'MCU_GPIO_PORTB(8)'
