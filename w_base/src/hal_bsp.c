@@ -1140,6 +1140,13 @@ void hal_bsp_halt() {
     hal_mcu_halt();
 }
 
+#if MYNEWT_VAL(BSP_POWER_SETUP)
+
+
+static LP_HOOK_t _hook_get_mode_cb=NULL;
+static LP_HOOK_t _hook_exit_cb=NULL;
+static LP_HOOK_t _hook_enter_cb=NULL;
+
 static void hal_bsp_disable_clks_in_sleep() {
     // No clocks in deepsleep except SRAM (0x00010000)
     RCC->AHBLPENR = 0x00010000;
@@ -1158,12 +1165,6 @@ static void hal_bsp_enable_clks_in_sleep() {
     RCC->APB1LPENR = 0xB0E64A37;
     RCC->APB2LPENR = 0x0000521D;
 }
-
-#if MYNEWT_VAL(BSP_POWER_SETUP)
-
-static LP_HOOK_t _hook_get_mode_cb=NULL;
-static LP_HOOK_t _hook_exit_cb=NULL;
-static LP_HOOK_t _hook_enter_cb=NULL;
 
 /* hook idle enter/exit phases. 
  * Note the get_mode call is made with irq disabled in OS critical section - so don't hang about
