@@ -1077,7 +1077,8 @@ uint32_t QQQ_uart_inited=0;
 void hal_bsp_uart_init(void)
 {
 #if MYNEWT_VAL(UART_0)
-    // unreset uart, enable its clock
+    // reset uart, enable its clock
+    __HAL_RCC_USART1_FORCE_RESET( );
     __HAL_RCC_USART1_RELEASE_RESET( );
     __HAL_RCC_USART1_CLK_ENABLE( );
 
