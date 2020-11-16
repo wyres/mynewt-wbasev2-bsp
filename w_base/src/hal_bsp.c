@@ -127,9 +127,9 @@ static w_base_v2_pins_t W_BASE_V2_PINS_IDLE[] =
     { .pin = EXT_IO, 										.idle_type = IDLE_PULLUP	},      // Must PULLUP with revC/D d-card as Hall effect is pull'd up (13mA current!)
     { .pin = EXT_BUTTON, 									.idle_type = IDLE_PULLUP	},      // As there is a pullup on the dcard (300uA otherwise)
     { .pin = CN5_PIN1,					                    .idle_type = IDLE_NOPULL	},      // MICROPHONE_I2S2_SD_PIN
-    { .pin = CN5_PIN2,						                .idle_type = IDLE_NOPULL	},      // SPI_1_PIN_MISO (NC normally)
+    { .pin = CN5_PIN2,						                .idle_type = IDLE_PULLDOWN	},      // SPI_1_PIN_MISO (NC normally)
     { .pin = CN5_PIN3,					                    .idle_type = IDLE_NOPULL	},      // MICROPHONE_I2S2_CLK_PIN
-    { .pin = CN5_PIN4,						                .idle_type = IDLE_NOPULL	},      // SPI_1_PIN_SS (NC normally)
+    { .pin = CN5_PIN4,						                .idle_type = IDLE_PULLDOWN	},      // SPI_1_PIN_SS (NC normally)
 
 #if 0//MYNEWT_VAL(BUILD_RELEASE)
     { .pin = SWD_CLK, 										.idle_type = IDLE_PULLDOWN 	},
@@ -211,16 +211,10 @@ void bsp_deinit_all_ios()
     __HAL_RCC_APB1_RELEASE_RESET();
     __HAL_RCC_APB2_RELEASE_RESET();
     */
-    // Disable all the clocks...
+    // Disable all the clocks... no as hangs (mustn't disable sram clock)
 //    RCC->AHBENR = 0;
 //    RCC->APB1ENR = 0;
 //    RCC->APB2ENR = 0;
-
-    __HAL_RCC_GPIOA_CLK_DISABLE();
-    __HAL_RCC_GPIOB_CLK_DISABLE();
-    __HAL_RCC_GPIOC_CLK_DISABLE();
-    __HAL_RCC_GPIOD_CLK_DISABLE();
-    __HAL_RCC_GPIOE_CLK_DISABLE();
     // No need to disable them in sleep modes, as they are disabled 'normally'
 
 }
@@ -635,15 +629,11 @@ int hal_bsp_init_i2c() {
 // deinit for power saving
 int hal_bsp_deinit_i2c() {
     
+#if MYNEWT_VAL(I2C_0)
+
     __HAL_RCC_I2C1_FORCE_RESET();
     __HAL_RCC_I2C1_RELEASE_RESET();
     __HAL_RCC_I2C1_CLK_DISABLE( );
-
-    __HAL_RCC_I2C2_FORCE_RESET();
-    __HAL_RCC_I2C2_RELEASE_RESET();
-    __HAL_RCC_I2C2_CLK_DISABLE( );
-
-#if MYNEWT_VAL(I2C_0)
 
     /*deinit is not done properly because of this : */
     hal_gpio_deinit(os_bsp_i2c0_cfg.hic_pin_sda);
@@ -1073,7 +1063,6 @@ void hal_bsp_pwm_deinit() {
 }
 
 // UART
-uint32_t QQQ_uart_inited=0;
 void hal_bsp_uart_init(void)
 {
 #if MYNEWT_VAL(UART_0)
@@ -1087,22 +1076,12 @@ void hal_bsp_uart_init(void)
     
     hal_gpio_deinit(os_bsp_uart0_cfg.suc_pin_rx);
     hal_gpio_init_af(os_bsp_uart0_cfg.suc_pin_rx, os_bsp_uart0_cfg.suc_pin_af, 0, 0);
-    QQQ_uart_inited++;
 #endif
 }
 
 
 void hal_bsp_uart_deinit(void)
 {
-    // Ok to keep UART in reset when de-inited
-    __HAL_RCC_USART1_FORCE_RESET( );
-    __HAL_RCC_USART1_CLK_DISABLE( );
-
-    __HAL_RCC_USART2_FORCE_RESET( );
-    __HAL_RCC_USART2_CLK_DISABLE( );
-
-    __HAL_RCC_USART3_FORCE_RESET( );
-    __HAL_RCC_USART3_CLK_DISABLE( );
 
 #if MYNEWT_VAL(UART_0)
     // Uart0 is UART1 in STM32 doc hence names of HAL defns
@@ -1110,6 +1089,10 @@ void hal_bsp_uart_deinit(void)
         .Mode = GPIO_MODE_ANALOG,
         .Pull = GPIO_NOPULL
     };
+
+    __HAL_RCC_USART1_FORCE_RESET( );
+    __HAL_RCC_USART1_RELEASE_RESET( );
+    __HAL_RCC_USART1_CLK_DISABLE( );
 
     hal_gpio_deinit(os_bsp_uart0_cfg.suc_pin_tx);
     highz_cfg.Pin = os_bsp_uart0_cfg.suc_pin_tx;
@@ -1120,7 +1103,6 @@ void hal_bsp_uart_deinit(void)
     highz_cfg.Pin = os_bsp_uart0_cfg.suc_pin_rx;
     highz_cfg.Alternate = os_bsp_uart0_cfg.suc_pin_rx;
     hal_gpio_init_stm(highz_cfg.Pin, &highz_cfg);
-    QQQ_uart_inited++;
 #endif //MYNEWT_VAL(UART_0)
 }
 
@@ -1147,25 +1129,6 @@ void hal_bsp_halt() {
 static LP_HOOK_t _hook_get_mode_cb=NULL;
 static LP_HOOK_t _hook_exit_cb=NULL;
 static LP_HOOK_t _hook_enter_cb=NULL;
-
-static void hal_bsp_disable_clks_in_sleep() {
-    // No clocks in deepsleep except SRAM (0x00010000)
-    RCC->AHBLPENR = 0x00010000;
-    RCC->APB1LPENR = 0;
-    RCC->APB2LPENR = 0;
-
-    // No appreciable difference to explicitly turning off clocks, so don't
-    /*
-    RCC->AHBENR = 0x00008000;
-    RCC->APB2ENR = 0;
-    RCC->APB1ENR = 0;
-    */
-}
-static void hal_bsp_enable_clks_in_sleep() {
-    RCC->AHBLPENR = 0x0101903F;     // power on values...
-    RCC->APB1LPENR = 0xB0E64A37;
-    RCC->APB2LPENR = 0x0000521D;
-}
 
 /* hook idle enter/exit phases. 
  * Note the get_mode call is made with irq disabled in OS critical section - so don't hang about
@@ -1215,14 +1178,12 @@ void hal_bsp_power_handler_sleep_enter(int nextMode)
             /*UART - 3mA */
             hal_bsp_uart_deinit();
 
-            /* disable clocks in sleep */
-            hal_bsp_disable_clks_in_sleep();
+            // Note : no need to disable 'clks in sleep' as this is for 'stop' mode and all clks get stopped anyway
             break;
 
         case HAL_BSP_POWER_WFI: 
             /* Dont deinit any hw for this case */
-            // Allowed to have your clocks in normal sleep
-            hal_bsp_enable_clks_in_sleep();
+            // Allowed to have your clocks in normal 'wfi' sleep (essential for correct uart operation)
             break;
 
         case HAL_BSP_POWER_ON:
